@@ -24,8 +24,8 @@ class QTMRTClient:
             self.__logger.error(f"Could not connect to QTM RT Server at {self.__host}:{self.__port}")
             raise QTMException(f"Could not connect to QTM RT Server at {self.__host}:{self.__port}")
 
-        greeting = str(self.__recv_timeout(2000), 'ascii')
-        if "QTM RT Interface connected" not in greeting:
+        greeting = self._read_response()
+        if isinstance(greeting, CommandPacket) and "QTM RT Interface connected" not in greeting.message:
             self.__logger.error(f"Error while establishing connection: {greeting}. Closing socket...")
             self.__close()
             raise QTMException(f"Error while establishing connection: {greeting}. Closing socket...")
@@ -39,45 +39,47 @@ class QTMRTClient:
         if isinstance(response_packet, ErrorPacket):
             self.__logger.error(f"Impossible to take control of QTM: {response_packet.message}. Closing socket...")
             self.__close()
+            # return
             raise QTMException(f"Impossible to take control of QTM: {response_packet.message}. Closing socket...")
         else:
             self.__logger.info("Successfully taken control of QTM.")
 
-    @staticmethod
-    def __parse_packet(bytes) -> QTMPacket:
-        packet = struct.unpack("<iis", bytes)
-        if packet[1] == 0:
-            return ErrorPacket(packet[2])
-        elif packet[1] == 1:
-            message_parts = packet[2].split(" ")
-            return CommandPacket(message_parts[0], message_parts[1:])
-        elif packet[1] == 6:
-            return EventPacket(QTMEvent(packet[2]))
-
     def _read_response(self) -> QTMPacket:
-        buffer = self.__recv_timeout()
-        return self.__parse_packet(buffer)
+        payload_size = struct.unpack("<i", self.__socket.recv(4))
+        payload_type = struct.unpack("<i", self.__socket.recv(4))
+        string_size = payload_size[0] - 8
+        if string_size > 0:
+            payload = struct.unpack(f"<{string_size}s", self.__socket.recv(string_size))[0].decode("ascii")
+            if payload_type[0] == 0:
+                return ErrorPacket(payload)
+            elif payload_type[0] == 1:
+                message_parts = payload.split(" ")
+                return CommandPacket(message_parts[0], message_parts[1:])
+        elif payload_type[0] == 6:
+            return EventPacket(QTMEvent(payload_type[0]))
 
     def is_connected(self):
         return self.__socket is not None
 
     def disconnect(self):
-        release_control_packet = CommandPacket("ReleaseControl", args=[])
-        release_control_packet.send(self.__socket)
-        response_packet = self._read_response()
-        if isinstance(response_packet, ErrorPacket):
-            self.__logger.error(f"Error while attempting to release control...")
-            raise QTMException(f"Error while attempting to release control...")
-        else:
-            self.__logger.info("Successfully released control of QTM.")
-        self.__close()
+        if self.is_connected():
+            release_control_packet = CommandPacket("ReleaseControl", args=[])
+            release_control_packet.send(self.__socket)
+            response_packet = self._read_response()
+            if isinstance(response_packet, ErrorPacket):
+                self.__logger.error(f"Error while attempting to release control...")
+                raise QTMException(f"Error while attempting to release control...")
+            else:
+                self.__logger.info("Successfully released control of QTM.")
+            self.__close()
 
     def calibrate(self):
         pass
 
     def send_event(self, label) -> str:
         event_command = CommandPacket("SetQTMEvent", [label])
-        response = event_command.send(self.__socket)
+        event_command.send(self.__socket)
+        response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while sending event {label}...")
             raise QTMException(f"Error while sending event {label}...")
@@ -87,7 +89,8 @@ class QTMRTClient:
 
     def new_measurement(self) -> str:
         new_command = CommandPacket("New", [])
-        response = new_command.send(self.__socket)
+        new_command.send(self.__socket)
+        response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while starting new measurement: {response.message}...")
             raise QTMException(f"Error while starting new measurement: {response.message}...")
@@ -97,7 +100,8 @@ class QTMRTClient:
 
     def close_measurement(self) -> str:
         new_command = CommandPacket("Close", [])
-        response = new_command.send(self.__socket)
+        new_command.send(self.__socket)
+        response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while ending measurement: {response.message}...")
             raise QTMException(f"Error while ending measurement: {response.message}...")
@@ -110,7 +114,8 @@ class QTMRTClient:
         if from_file:
             args = ["RTFromFile"]
         start_command = CommandPacket("Start", args)
-        response = start_command.send(self.__socket)
+        start_command.send(self.__socket)
+        response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while starting new capture: {response.message}...")
             raise QTMException(f"Error while starting new capture: {response.message}...")
@@ -120,7 +125,8 @@ class QTMRTClient:
 
     def stop_capture(self):
         start_command = CommandPacket("Stop", [])
-        response = start_command.send(self.__socket)
+        start_command.send(self.__socket)
+        response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while stopping capture: {response.message}...")
             raise QTMException(f"Error while stopping capture: {response.message}...")
@@ -134,38 +140,3 @@ class QTMRTClient:
     def __close(self):
         self.__socket.close()
         self.__socket = None
-
-    def __recv_timeout(self, timeout=2):
-        # make socket non blocking
-        self.__socket.setblocking(0)
-
-        # total data partwise in an array
-        total_data = []
-        data = ''
-
-        # beginning time
-        begin = time.time()
-        while 1:
-            # if you got some data, then break after timeout
-            if total_data and time.time() - begin > timeout:
-                break
-
-            # if you got no data at all, wait a little longer, twice the timeout
-            elif time.time() - begin > timeout * 2:
-                break
-
-            # recv something
-            try:
-                data = self.__socket.recv(8192)
-                if data:
-                    total_data.append(data)
-                    # change the beginning time for measurement
-                    begin = time.time()
-                else:
-                    # sleep for sometime to indicate a gap
-                    time.sleep(0.1)
-            except:
-                pass
-
-        # join all parts to make final string
-        return b''.join(total_data)

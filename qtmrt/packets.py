@@ -14,19 +14,21 @@ class QTMPacket(ABC):
     def send(self, socket):
         self.__send(socket, self.payload)
 
-    def __send(self, socket, msg):
-        totalsent = 0
-        msglen = len(msg)
-        while totalsent < msglen:
-            sent = socket.send(msg[totalsent:])
+    def __send(self, socket, message):
+        total_sent = 0
+        message_length = len(message)
+        print("MSG: ", message_length, message, "\n")
+        while total_sent < message_length:
+            sent = socket.send(message[total_sent:])
             if sent == 0:
                 self.__logger.error("Send interrupted or failed! Aborting connection!")
-            totalsent = totalsent + sent
+            total_sent = total_sent + sent
 
 
 class ErrorPacket(QTMPacket):
     def __init__(self, message: str):
-        super().__init__(0, struct.pack("<iis", struct.calcsize(f"<ii{len(message)}s"), 0, message))
+        frmt = f"<ii{len(message)}s"
+        super().__init__(0, struct.pack(frmt, struct.calcsize(frmt), 0, message.encode("ascii")))
         self.message = message
 
     def __str__(self):
@@ -35,8 +37,12 @@ class ErrorPacket(QTMPacket):
 
 class CommandPacket(QTMPacket):
     def __init__(self, command: str, args: List[str]):
-        message = command + " " + " ".join(args)
-        super().__init__(0, struct.pack("<iis", struct.calcsize(f"<ii{len(message)}s"), 0, message.encode("ascii")))
+        message = (command + " " + " ".join(args)).strip()
+        frmt = f"<ii{len(message)}sB"
+        print(message + "|")
+        print(message.encode("ascii"))
+        print("Sent Size", struct.calcsize(frmt))
+        super().__init__(1, struct.pack(frmt, struct.calcsize(frmt), 1, message.encode("ascii"), 0))
         self.message = message
 
     def __str__(self) -> str:
@@ -55,7 +61,7 @@ class QTMEvent(Enum):
     RT_FROM_FILE_STOPPED = 9,
     WAITING_FOR_TRIGGER = 10,
     CAMERA_SETTINGS_CHANGED = 11,
-    QTM_SUTTING_DOWN = 12,
+    QTM_SHUTTING_DOWN = 12,
     CAPTURE_SAVED = 13,
     REPROCESSING_STARTED = 14,
     REPROCESSING_STOPPED = 15,
@@ -63,6 +69,5 @@ class QTMEvent(Enum):
 
 
 class EventPacket(QTMPacket):
-
     def __init__(self, event: QTMEvent):
         super().__init__(6, struct.pack("<iiB", 9, 6, event.value))

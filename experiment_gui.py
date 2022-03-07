@@ -1,5 +1,6 @@
 import sys
 
+from qtmrt import QTMException
 from qtmrt.client import QTMRTClient
 from util.logging import setup_logging
 import logging
@@ -20,7 +21,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.qtm_client = QTMRTClient("127.0.0.1", 22222)
+        self.qtm_client = None
 
     def start_simulation(self):
         if not self.stop_button.isEnabled():
@@ -86,26 +87,35 @@ class Window(QMainWindow, Ui_MainWindowUI):
 
     def connect_qtm(self, toggle_on: bool):
         if toggle_on:
-            logger.info(f"Connecting to QTM @ RT://{self.qtm_hostname.text()}:{self.qtm_port.text()}")
-            self.qtm_connection_status.setText("Connected!")
-            self.qtm_connection_status.setStyleSheet("color:green;")
-            self.qtm_connect_btn.setStyleSheet("background-color:lightgreen;color:black;")
-            self.qtm_hostname.setEnabled(False)
-            self.qtm_port.setEnabled(False)
-            self.qtm_use_authentication.setEnabled(False)
-            self.auth_frame.setEnabled(False)
-            self.qtm_client.connect()
-            self.qtm_client.new_measurement()
+            try:
+                logger.info(f"Connecting to QTM @ RT://{self.qtm_hostname.text()}:{self.qtm_port.text()}")
+                if self.qtm_use_authentication.isChecked():
+                    self.qtm_client = QTMRTClient("127.0.0.1", 22222, self.qtm_password.text())
+                else:
+                    self.qtm_client = QTMRTClient("127.0.0.1", 22222, self.qtm_password.text())
+                self.qtm_client.connect()
+                self.qtm_connection_status.setText("Connected!")
+                self.qtm_connection_status.setStyleSheet("color:green;")
+                self.qtm_connect_btn.setStyleSheet("background-color:lightgreen;color:black;")
+                self.qtm_hostname.setEnabled(False)
+                self.qtm_port.setEnabled(False)
+                self.qtm_use_authentication.setEnabled(False)
+                self.auth_frame.setEnabled(False)
+            except QTMException:
+                logger.error("Aborting connection!")
+            # self.qtm_client.new_measurement()
         else:
             self.qtm_connection_status.setText("Disconnected")
-            self.qtm_connection_status.setStyleSheet("color:black;background-color:none;")
+            self.qtm_connect_btn.setStyleSheet("color:black;background-color:none;")
             self.qtm_hostname.setEnabled(True)
             self.qtm_port.setEnabled(True)
             self.qtm_use_authentication.setEnabled(True)
             if self.qtm_use_authentication.isChecked():
                 self.auth_frame.setEnabled(True)
-            self.qtm_client.close_measurement()
+            # self.qtm_client.close_measurement()
             self.qtm_client.disconnect()
+            del self.qtm_client
+            self.qtm_client = None
             logger.info("Disconnecting from QTM")
 
 
