@@ -9,7 +9,7 @@ class QTMPacket(ABC):
     def __init__(self, type: int, payload: bytes):
         self._type = type
         self.payload = payload
-        self.__logger = logging.getLogger("Packet")
+        self._logger = logging.getLogger("Packet")
 
     def send(self, socket):
         self.__send(socket, self.payload)
@@ -17,11 +17,11 @@ class QTMPacket(ABC):
     def __send(self, socket, message):
         total_sent = 0
         message_length = len(message)
-        print("MSG: ", message_length, message, "\n")
+        self._logger.debug("MSG: ", message_length, message, "\n")
         while total_sent < message_length:
             sent = socket.send(message[total_sent:])
             if sent == 0:
-                self.__logger.error("Send interrupted or failed! Aborting connection!")
+                self._logger.error("Send interrupted or failed! Aborting connection!")
             total_sent = total_sent + sent
 
 
@@ -39,10 +39,9 @@ class CommandPacket(QTMPacket):
     def __init__(self, command: str, args: List[str]):
         message = (command + " " + " ".join(args)).strip()
         frmt = f"<ii{len(message)}sB"
-        print(message + "|")
-        print(message.encode("ascii"))
-        print("Sent Size", struct.calcsize(frmt))
         super().__init__(1, struct.pack(frmt, struct.calcsize(frmt), 1, message.encode("ascii"), 0))
+        self._logger.debug(message.encode("ascii"))
+        self._logger.debug("Sent Size", struct.calcsize(frmt))
         self.message = message
 
     def __str__(self) -> str:
