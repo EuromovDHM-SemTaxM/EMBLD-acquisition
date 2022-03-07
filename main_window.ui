@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>769</height>
+    <height>768</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -28,7 +28,7 @@
   </property>
   <property name="windowIcon">
    <iconset theme="microscope">
-    <normaloff>.</normaloff>.</iconset>
+    <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition</iconset>
   </property>
   <property name="toolTip">
    <string>This is the main widow of the acquisition dashboard</string>
@@ -260,7 +260,7 @@
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>resources/play.png</normaloff>resources/play.png</iconset>
+         <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/play.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/play.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -305,7 +305,7 @@
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>resources/pause.png</normaloff>resources/pause.png</iconset>
+         <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/pause.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/pause.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -350,7 +350,7 @@
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>resources/stop.png</normaloff>resources/stop.png</iconset>
+         <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/stop.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/stop.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -541,7 +541,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QLabel" name="label_4">
         <property name="font">
          <font>
@@ -556,7 +556,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QSpinBox" name="segment_duration_spin">
         <property name="font">
          <font>
@@ -589,6 +589,36 @@
       </item>
       <item row="5" column="1">
        <widget class="QPlainTextEdit" name="subject_notes"/>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="font">
+         <font>
+          <family>Segoe UI Variable Text Semibold</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Recording Trial</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QSpinBox" name="spinBox">
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -729,7 +759,19 @@
       </property>
       <layout class="QFormLayout" name="authentication_layout">
        <item row="0" column="1">
-        <widget class="QLineEdit" name="qtm_password"/>
+        <widget class="QLineEdit" name="qtm_password">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+         <property name="cursorPosition">
+          <number>0</number>
+         </property>
+        </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_8">
@@ -766,7 +808,7 @@
         </property>
         <property name="icon">
          <iconset>
-          <normaloff>resources/connect.png</normaloff>resources/connect.png</iconset>
+          <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/connect.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/connect.png</iconset>
         </property>
         <property name="iconSize">
          <size>
