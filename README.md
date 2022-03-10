@@ -1,1 +1,1 @@
-# generative_dataset_acquisition
+# EMBLD
