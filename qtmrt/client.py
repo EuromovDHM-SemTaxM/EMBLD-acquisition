@@ -34,7 +34,7 @@ class QTMRTClient:
         if self.__password is not None:
             tk_args = [self.__password]
         take_control_packet = CommandPacket("TakeControl", args=tk_args)
-        take_control_packet.send(self.__socket)
+        self._send_packet(take_control_packet)
         response_packet = self._read_response()
         if isinstance(response_packet, ErrorPacket):
             self.__logger.error(f"Impossible to take control of QTM: {response_packet.message}. Closing socket...")
@@ -43,6 +43,17 @@ class QTMRTClient:
             raise QTMException(f"Impossible to take control of QTM: {response_packet.message}. Closing socket...")
         else:
             self.__logger.info("Successfully taken control of QTM.")
+
+    def _send_packet(self, packet: QTMPacket):
+        payload = packet.payload
+        total_sent = 0
+        message_length = len(payload)
+        self.__logger.debug(f"Payload: {message_length} - {payload}\n")
+        while total_sent < message_length:
+            sent = self.__socket.send(payload[total_sent:])
+            if sent == 0:
+                self.__logger.error("Send interrupted or failed! Aborting connection!")
+            total_sent = total_sent + sent
 
     def _read_response(self) -> QTMPacket:
         payload_size = struct.unpack("<i", self.__socket.recv(4))
@@ -64,7 +75,7 @@ class QTMRTClient:
     def disconnect(self):
         if self.is_connected():
             release_control_packet = CommandPacket("ReleaseControl", args=[])
-            release_control_packet.send(self.__socket)
+            self._send_packet(release_control_packet)
             response_packet = self._read_response()
             if isinstance(response_packet, ErrorPacket):
                 self.__logger.error(f"Error while attempting to release control...")
@@ -78,7 +89,7 @@ class QTMRTClient:
 
     def send_event(self, label) -> str:
         event_command = CommandPacket("SetQTMEvent", [label])
-        event_command.send(self.__socket)
+        self._send_packet(event_command)
         response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while sending event {label}...")
@@ -89,7 +100,7 @@ class QTMRTClient:
 
     def new_measurement(self) -> str:
         new_command = CommandPacket("New", [])
-        new_command.send(self.__socket)
+        self._send_packet(new_command)
         response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while starting new measurement: {response.message}...")
@@ -100,7 +111,7 @@ class QTMRTClient:
 
     def close_measurement(self) -> str:
         new_command = CommandPacket("Close", [])
-        new_command.send(self.__socket)
+        self._send_packet(new_command)
         response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while ending measurement: {response.message}...")
@@ -114,7 +125,7 @@ class QTMRTClient:
         if from_file:
             args = ["RTFromFile"]
         start_command = CommandPacket("Start", args)
-        start_command.send(self.__socket)
+        self._send_packet(start_command)
         response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while starting new capture: {response.message}...")
@@ -125,7 +136,7 @@ class QTMRTClient:
 
     def stop_capture(self):
         start_command = CommandPacket("Stop", [])
-        start_command.send(self.__socket)
+        self._send_packet(start_command)
         response = self._read_response()
         if isinstance(response, ErrorPacket):
             self.__logger.error(f"Error while stopping capture: {response.message}...")
@@ -135,7 +146,15 @@ class QTMRTClient:
         return response.message
 
     def save_capture(self, filename):
-        pass
+        save_command = CommandPacket("Save", [filename])
+        self._send_packet(save_command)
+        response = self._read_response()
+        if isinstance(response, ErrorPacket):
+            self.__logger.error(f"Error while saving capture : {response.message}...")
+            raise QTMException(f"Error while saving capture: {response.message}...")
+        elif "Stopping " in response.message:
+            self.__logger.info(f"Stopping capture")
+        return response.message
 
     def __close(self):
         self.__socket.close()
