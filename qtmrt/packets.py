@@ -4,13 +4,15 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
+from qtmrt import QTMEvent
+from util.xml import dict_to_etree, XmlDictConfig
+
 
 class QTMPacket(ABC):
     def __init__(self, type: int, payload: bytes):
         self._type = type
         self.payload = payload
         self._logger = logging.getLogger("Packet")
-
 
 
 class ErrorPacket(QTMPacket):
@@ -36,23 +38,27 @@ class CommandPacket(QTMPacket):
         return "Command - " + self.message
 
 
-class QTMEvent(Enum):
-    CONNECTED = 1,
-    CONNECTION_CLOSED = 2,
-    CAPTURE_STARTED = 3,
-    CAPTURE_STOPPED = 4,
-    NOT_USED = 5,
-    CALIBRATION_STARTED = 6,
-    CALIBRATION_STOPPED = 7,
-    RT_FROM_FILE_STARTED = 8,
-    RT_FROM_FILE_STOPPED = 9,
-    WAITING_FOR_TRIGGER = 10,
-    CAMERA_SETTINGS_CHANGED = 11,
-    QTM_SHUTTING_DOWN = 12,
-    CAPTURE_SAVED = 13,
-    REPROCESSING_STARTED = 14,
-    REPROCESSING_STOPPED = 15,
-    TRIGGER = 16
+class XMLPacket(QTMPacket):
+    def __init__(self, xml_string: str):
+        frmt = f"<ii{len(xml_string)}sB"
+        super().__init__(2, struct.pack(frmt, struct.calcsize(frmt), 1, xml_string.encode("ascii"), 0))
+        self.message = xml_string
+        self._logger.debug(xml_string.encode("ascii"))
+        self._logger.debug(f"Sent Size {struct.calcsize(frmt)}")
+
+    @staticmethod
+    def create_from_dict(xml_dict):
+        from lxml import etree
+        xml_tree = dict_to_etree(xml_dict)
+        etree.tostring(xml_tree.getroot(), xml_declaration=False)
+
+    def as_etree(self):
+        from lxml import etree
+        return etree.fromstring(self.message)
+
+    def as_dict(self):
+        return XmlDictConfig(self.as_etree().getroot())
+
 
 
 class EventPacket(QTMPacket):

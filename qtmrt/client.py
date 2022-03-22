@@ -3,9 +3,10 @@ import socket
 import time
 
 import struct
+from typing import Dict
 
 from qtmrt import QTMException
-from qtmrt.packets import QTMPacket, ErrorPacket, CommandPacket, EventPacket, QTMEvent
+from qtmrt.packets import QTMPacket, ErrorPacket, CommandPacket, EventPacket, QTMEvent, XMLPacket
 
 
 class QTMRTClient:
@@ -87,6 +88,26 @@ class QTMRTClient:
     def calibrate(self):
         pass
 
+    def get_parameters(self, parameter_name: str) -> XMLPacket:
+        """
+        Parameters:
+        ------
+        parameter_name: str
+            The name of the requested parameter. Syntax: All | ([General] [Calibration] [3D] [6D] [Analog] [Force] [Image]
+            [GazeVector] [EyeTracker] [Skeleton[:global]])
+        Returns:
+        -------
+        xml_string: XMLPacket
+            An XML Packet containing the server response
+        """
+        command = CommandPacket("GetParameters", [parameter_name])
+        self._send_packet(command)
+        response = self._read_response()
+        if isinstance(response, ErrorPacket):
+            self.__logger.error(f"Error while sending GetParameters {parameter_name}...")
+            raise QTMException(f"Error while sending GetParameters {parameter_name}...")
+        return response
+
     def send_event(self, label) -> str:
         event_command = CommandPacket("SetQTMEvent", [label])
         self._send_packet(event_command)
@@ -155,6 +176,42 @@ class QTMRTClient:
         elif "Stopping " in response.message:
             self.__logger.info(f"Stopping capture")
         return response.message
+
+    def get_calibration_status(self) -> Dict:
+        xml_response = self.get_parameters("Calibration")
+        return xml_response.as_dict()
+
+    def get_3d_parameters(self) -> Dict:
+        xml_response = self.get_parameters("3D")
+        return xml_response.as_dict()
+
+    def get_6d_parameters(self) -> Dict:
+        xml_response = self.get_parameters("6D")
+        return xml_response.as_dict()
+
+    def get_gaze_vector_parameters(self) -> Dict:
+        xml_response = self.get_parameters("GazeVector")
+        return xml_response.as_dict()
+
+    def get_eye_tracker_parameters(self) -> Dict:
+        xml_response = self.get_parameters("EyeTracker")
+        return xml_response.as_dict()
+
+    def get_analog_parameters(self) -> Dict:
+        xml_response = self.get_parameters("Analog")
+        return xml_response.as_dict()
+
+    def get_force_parameters(self) -> Dict:
+        xml_response = self.get_parameters("Force")
+        return xml_response.as_dict()
+
+    def get_image_parameters(self):
+        xml_response = self.get_parameters("Image")
+        return xml_response.as_dict()
+
+    def get_skeleton_parameters(self):
+        xml_response = self.get_parameters("Skeleton")
+        return xml_response.as_dict()
 
     def __close(self):
         self.__socket.close()
