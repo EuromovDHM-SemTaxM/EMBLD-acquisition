@@ -117,7 +117,7 @@ class Ui_MainWindowUI(object):
         self.play_button.setBaseSize(QtCore.QSize(64, 64))
         self.play_button.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("resources/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.play_button.setIcon(icon)
         self.play_button.setIconSize(QtCore.QSize(64, 64))
         self.play_button.setObjectName("play_button")
@@ -130,7 +130,7 @@ class Ui_MainWindowUI(object):
         self.pause_button.setBaseSize(QtCore.QSize(64, 64))
         self.pause_button.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("resources/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pause_button.setIcon(icon1)
         self.pause_button.setIconSize(QtCore.QSize(64, 64))
         self.pause_button.setObjectName("pause_button")
@@ -143,7 +143,7 @@ class Ui_MainWindowUI(object):
         self.stop_button.setBaseSize(QtCore.QSize(64, 64))
         self.stop_button.setText("")
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("resources/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.stop_button.setIcon(icon2)
         self.stop_button.setIconSize(QtCore.QSize(64, 64))
         self.stop_button.setObjectName("stop_button")
@@ -371,7 +371,7 @@ class Ui_MainWindowUI(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.qtm_connect_btn = QtWidgets.QPushButton(self.horizontalLayoutWidget_3)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/connect.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap("resources/connect.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.qtm_connect_btn.setIcon(icon3)
         self.qtm_connect_btn.setIconSize(QtCore.QSize(64, 64))
         self.qtm_connect_btn.setCheckable(True)
@@ -395,18 +395,18 @@ class Ui_MainWindowUI(object):
         MainWindowUI.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindowUI)
-        self.play_button.clicked.connect(MainWindowUI.start_simulation) # type: ignore
-        self.pause_button.clicked.connect(MainWindowUI.pause_simulation) # type: ignore
-        self.stop_button.clicked.connect(MainWindowUI.stop_simulation) # type: ignore
-        self.qtm_use_authentication.toggled['bool'].connect(self.auth_frame.setEnabled) # type: ignore
-        self.stop_button.clicked['bool'].connect(self.experiment_group.setDisabled) # type: ignore
-        self.stop_button.clicked['bool'].connect(self.qtm_group.setDisabled) # type: ignore
-        self.pause_button.clicked['bool'].connect(self.play_button.setDisabled) # type: ignore
-        self.stop_button.clicked['bool'].connect(self.play_button.setDisabled) # type: ignore
-        self.stop_button.clicked['bool'].connect(self.pause_button.setEnabled) # type: ignore
-        self.qtm_connect_btn.toggled['bool'].connect(MainWindowUI.connect_qtm) # type: ignore
-        self.stop_button.clicked['bool'].connect(self.stop_button.setEnabled) # type: ignore
-        self.pause_button.clicked['bool'].connect(self.pause_button.setEnabled) # type: ignore
+        self.play_button.clicked.connect(MainWindowUI.start_simulation)  # type: ignore
+        self.pause_button.clicked.connect(MainWindowUI.pause_simulation)  # type: ignore
+        self.stop_button.clicked.connect(MainWindowUI.stop_simulation)  # type: ignore
+        self.qtm_use_authentication.toggled['bool'].connect(self.auth_frame.setEnabled)  # type: ignore
+        self.stop_button.clicked['bool'].connect(self.experiment_group.setDisabled)  # type: ignore
+        self.stop_button.clicked['bool'].connect(self.qtm_group.setDisabled)  # type: ignore
+        self.pause_button.clicked['bool'].connect(self.play_button.setDisabled)  # type: ignore
+        self.stop_button.clicked['bool'].connect(self.play_button.setDisabled)  # type: ignore
+        self.stop_button.clicked['bool'].connect(self.pause_button.setEnabled)  # type: ignore
+        self.qtm_connect_btn.toggled['bool'].connect(MainWindowUI.connect_qtm)  # type: ignore
+        self.stop_button.clicked['bool'].connect(self.stop_button.setEnabled)  # type: ignore
+        self.pause_button.clicked['bool'].connect(self.pause_button.setEnabled)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindowUI)
 
     def retranslateUi(self, MainWindowUI):

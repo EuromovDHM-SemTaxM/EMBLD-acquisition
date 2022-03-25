@@ -28,7 +28,7 @@
   </property>
   <property name="windowIcon">
    <iconset theme="microscope">
-    <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition</iconset>
+    <normaloff>../generative_dataset_acquisition</normaloff>../generative_dataset_acquisition</iconset>
   </property>
   <property name="toolTip">
    <string>This is the main widow of the acquisition dashboard</string>
@@ -259,8 +259,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/play.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/play.png</iconset>
+        <iconset resource="main_windows.qrc">
+         <normaloff>:/play</normaloff>:/play</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -304,8 +304,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/pause.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/pause.png</iconset>
+        <iconset resource="main_windows.qrc">
+         <normaloff>:/pause</normaloff>:/pause</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -349,8 +349,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/stop.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/stop.png</iconset>
+        <iconset resource="main_windows.qrc">
+         <normaloff>:/stop</normaloff>:/stop</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -629,7 +629,7 @@
       <x>490</x>
       <y>330</y>
       <width>511</width>
-      <height>291</height>
+      <height>341</height>
      </rect>
     </property>
     <property name="font">
@@ -807,8 +807,8 @@
          <string>*</string>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/connect.png</normaloff>//wsl.localhost/Ubuntu/home/tchechem/workspace/generative_dataset_acquisition/resources/connect.png</iconset>
+         <iconset resource="main_windows.qrc">
+          <normaloff>:/connect</normaloff>:/connect</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -867,11 +867,53 @@
       </item>
      </layout>
     </widget>
+    <widget class="QLabel" name="calbration_label_text">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>290</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Segoe UI Variable Small Semibol</family>
+       <pointsize>16</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Calibration:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="calibration_status_label">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>290</y>
+       <width>47</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: red;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="main_windows.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>play_button</sender>

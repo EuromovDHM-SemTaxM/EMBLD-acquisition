@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="connect">resources/connect.png</file>
+    <file alias="pause">resources/pause.png</file>
+    <file alias="play">resources/play.png</file>
+    <file alias="stop">resources/stop.png</file>
+</qresource>
+</RCC>
