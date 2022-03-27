@@ -1,0 +1,14 @@
+random_delays: True
+segment_duration: 3000
+locomotions: [ "stand", "walk", "jog" ]
+modifiers: [ "none", "stealthily", "spotively" ]
+transitions:
+  - none:
+      - orientation: 0
+  - turn right:
+      - orientation: 90
+  - turn left:
+      - orientation: -90
+  - turn around:
+      - orientation: 180
+actions: [ "none", "jump", "pick-up something" ]

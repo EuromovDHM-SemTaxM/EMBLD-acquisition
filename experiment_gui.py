@@ -11,9 +11,11 @@ setup_logging(console_log_output="stdout", console_log_level="debug", console_lo
 
 logger = logging.getLogger("Experiment Dashboard")
 
+from embld import configuration
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from main_window_ui import Ui_MainWindowUI
+
 
 
 class Window(QMainWindow, Ui_MainWindowUI):

@@ -1,16 +1,18 @@
 # This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
 
 # Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+import timeit
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+from tqdm import trange
+
+from embld.experiment.protocol import EMBLDAcquisitionDriver
+
+if __name__ == '__main__':
+    driver = EMBLDAcquisitionDriver()
+    start = timeit.default_timer()
+    for i in trange(1000000):
+        sequence = driver.sample_configurations()
+        # print(sequence)
+    end = timeit.default_timer()
+    print(end-start)

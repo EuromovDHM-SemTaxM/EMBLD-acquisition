@@ -534,43 +534,13 @@
         </property>
        </widget>
       </item>
+      <item row="5" column="1">
+       <widget class="QPlainTextEdit" name="subject_notes"/>
+      </item>
       <item row="6" column="0" colspan="2">
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="font">
-         <font>
-          <family>Segoe UI Variable Text Semibold</family>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Segment duration (ms):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QSpinBox" name="segment_duration_spin">
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="minimum">
-         <number>1000</number>
-        </property>
-        <property name="maximum">
-         <number>20000</number>
-        </property>
-        <property name="value">
-         <number>5000</number>
         </property>
        </widget>
       </item>
@@ -586,9 +556,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item row="5" column="1">
-       <widget class="QPlainTextEdit" name="subject_notes"/>
       </item>
       <item row="8" column="0">
        <widget class="QLabel" name="label_6">
