@@ -17,7 +17,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from main_window_ui import Ui_MainWindowUI
 
 
-
 class Window(QMainWindow, Ui_MainWindowUI):
 
     def __init__(self, parent=None):
@@ -103,6 +102,8 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.qtm_port.setEnabled(False)
                 self.qtm_use_authentication.setEnabled(False)
                 self.auth_frame.setEnabled(False)
+                calibration_status = self.qtm_client.get_calibration_status()
+                print(calibration_status)
             except QTMException:
                 logger.error("Aborting connection!")
             # self.qtm_client.new_measurement()
