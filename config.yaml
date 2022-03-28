@@ -1,7 +1,7 @@
 random_delays: True
-segment_duration: 3000
-locomotions: [ "stand", "walk", "jog" ]
-modifiers: [ "none", "stealthily", "spotively" ]
+segment_duration: 5000
+#locomotion: ["walk", "jog" ]
+modifiers: [ "none", "stealthily", "sportively" ]
 transitions:
   - none:
       - orientation: 0
@@ -11,4 +11,6 @@ transitions:
       - orientation: -90
   - turn around:
       - orientation: 180
-actions: [ "none", "jump", "pick-up something" ]
+actions: [ "none", "jump", "pick-up something", "stretch your arms"]
+
+sound_location: "resources/"

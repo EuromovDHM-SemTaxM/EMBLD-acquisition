@@ -67,6 +67,8 @@ class QTMRTClient:
             elif payload_type[0] == 1:
                 message_parts = payload.split(" ")
                 return CommandPacket(message_parts[0], message_parts[1:])
+            elif payload_type[0] == 2:
+                return XMLPacket(payload)
         elif payload_type[0] == 6:
             return EventPacket(QTMEvent(payload_type[0]))
 
