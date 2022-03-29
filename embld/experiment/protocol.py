@@ -55,28 +55,40 @@ class AudioPlayer(QThread):
 
 class ProtocolSimulationThread(QThread):
 
-    def __init__(self, env, signal, steps, audio_player) -> None:
+    def __init__(self, env, status_signal, position_signal, steps, beep_sound, audio_player) -> None:
         super().__init__()
         self.env = env
-        self.signal = signal
+        self.status_signal = status_signal
+        self.position_signal = position_signal
         self.steps = steps
         self.audio_player = audio_player
+        self.beep_sound = beep_sound
 
     def run(self):
         for step in self.steps:
             # configuration = step['configuration']
+
             duration = step['duration']
-            sound_duration = step['sound_duration']
+            sound_duration = step['sound_duration'] + self.beep_sound.getDur()
+            print(duration, sound_duration)
+
+            # Playing STOP beep
+            self.audio_player.play_audio(self.beep_sound)
+            self.status_signal.emit("STOP")
+
+            # Playing Instructions and emitting start marker
             self.audio_player.play_audio(step['sound'])
             self.msleep(int(sound_duration * 1000))
-            print(duration, sound_duration)
-            self.msleep(int(duration - sound_duration * 1000))
-            self.signal.emit(step['label'])
+            self.status_signal.emit(step['label'])
+            self.position_signal.emit(f"{step['position'][0]}, {step['position'][1]}")
+            self.msleep(int(duration))
+
         self.exec_()
 
 
 class EMBLDAcquisitionDriver(QObject):
     protocol_event = pyqtSignal(str)
+    position_event = pyqtSignal(str)
     protocol_timer = pyqtSignal(str)
     stop_experiment = pyqtSignal()
 
@@ -156,9 +168,9 @@ class EMBLDAcquisitionDriver(QObject):
                 {'configuration': next_configuration, 'position': current_position,
                  'duration': baseline_duration + random_delay_sequence[i], 'sound': sound,
                  'sound_duration': sound.getDur(),
-                 'label': list(next_configuration['transition'].keys())[0].replace(" ", "_") + "->" +
-                          next_configuration['modifier'] + "->" +
-                          next_configuration['action']})
+                 'label': list(next_configuration['transition'].keys())[0].replace(" ", "_") + "_" +
+                          next_configuration['modifier'].replace(" ", "_") + "_" +
+                          next_configuration['action'].replace(" ", "_")})
             i += 1
 
         return generated_sequence
@@ -209,6 +221,7 @@ class EMBLDAcquisitionDriver(QObject):
         timer_thread = TimerEventThread(self.protocol_timer)
         audio_player = AudioPlayer(self.__sound_server)
         audio_player.start()
-        protocol = ProtocolSimulationThread(env, self.protocol_event, self.sample_configurations(), audio_player)
+        protocol = ProtocolSimulationThread(env, self.protocol_event, self.position_event, self.sample_configurations(),
+                                            SndTable(self.__sounds["beep"]), audio_player)
         protocol.start()
         timer_thread.start()

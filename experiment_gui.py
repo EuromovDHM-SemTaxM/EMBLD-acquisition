@@ -6,7 +6,7 @@ from qtmrt.client import QTMRTClient
 from util.logging import setup_logging
 import logging
 
-setup_logging(console_log_output="stdout", console_log_level="debug", console_log_color=True,
+setup_logging(console_log_output="stdout", console_log_level="warn", console_log_color=True,
               logfile_file="experiment.log", logfile_log_level="debug", logfile_log_color=False,
               log_line_template="%(color_on)s[%(created)d] [%(threadName)s] [%(levelname)-8s] %(message)s%(color_off)s")
 
@@ -66,17 +66,22 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.qtm_group.setEnabled(False)
                 self.experiment_group.setEnabled(False)
                 self.play_button.setEnabled(False)
-
-                logger.debug("Starting acquisition driver...")
-                self.driver = EMBLDAcquisitionDriver(self.qtm_client)
-                logger.debug("Connecting timer...")
-                self.driver.protocol_timer.connect(self.status_time_label.setText)
-                self.driver.protocol_event.connect(self.status_protocol.setText)
-                self.driver.stop_experiment.connect(self.stop_button.setDown)
-                logger.debug("Starting driver simulation...")
-                self.driver.run_experiment()
-                logger.debug("Starting QTM capture..")
-                self.qtm_client.start_capture(True)
+                try:
+                    logger.debug("Starting acquisition driver...")
+                    self.driver = EMBLDAcquisitionDriver(self.qtm_client)
+                    logger.debug("Connecting timer...")
+                    self.driver.protocol_timer.connect(self.status_time_label.setText)
+                    self.driver.protocol_event.connect(self.status_protocol.setText)
+                    self.driver.protocol_event.connect(self.qtm_client.send_event)
+                    self.driver.position_event.connect(self.position_label.setText)
+                    self.driver.stop_experiment.connect(self.stop_button.setDown)
+                    logger.debug("Starting driver simulation...")
+                    self.driver.run_experiment()
+                    logger.debug("Starting QTM capture..")
+                    # self.qtm_client.new_measurement()
+                    self.qtm_client.start_capture(True)
+                except Exception as e:
+                    self.statusbar.showMessage(str(e))
 
         else:
             logger.info("Resuming simulation")
