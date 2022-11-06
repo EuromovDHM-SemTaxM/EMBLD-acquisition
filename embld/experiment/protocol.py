@@ -7,22 +7,14 @@ from embld.configuration import APP_PARAMETERS
 class EMBLDAcquisitionDriver:
     def __init__(self):
         self.__environment = simpy.rt.RealtimeEnvironment(factor=0.001)
-        self.__locomotion = APP_PARAMETERS['locomotions']
-        self.__modifiers = APP_PARAMETERS['modifiers']
-        self.__transitions = APP_PARAMETERS['transitions']
         self.__actions = APP_PARAMETERS['actions']
         self.__generate_configurations()
 
     def __generate_configurations(self):
         self.generated_configurations = []
-        for i in range(len(self.__locomotion)):
-            for j in range(len(self.__modifiers)):
-                for p in range(len(self.__transitions)):
-                    for k in range(len(self.__actions)):
-                        if "stand" not in self.__locomotion[i] or (
-                                "stand" in self.__locomotion[i] and "none" in self.__transitions[p]):
-                            self.generated_configurations.append(
-                                (self.__transitions[p], self.__locomotion[i], self.__modifiers[j], self.__actions[k]))
+        for k in range(len(self.__actions)):
+                self.generated_configurations.append(
+                    (self.__transitions[p], self.__locomotion[i], self.__modifiers[j], self.__actions[k]))
 
     @staticmethod
     def __generate_random_sequence(max_value, seq_len):
