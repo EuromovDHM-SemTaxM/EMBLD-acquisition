@@ -57,8 +57,7 @@ class XMLPacket(QTMPacket):
         return etree.fromstring(self.message)
 
     def as_dict(self):
-        return XmlDictConfig(self.as_etree().getroot())
-
+        return XmlDictConfig(self.as_etree())
 
 
 class EventPacket(QTMPacket):

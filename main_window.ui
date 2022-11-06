@@ -28,7 +28,7 @@
   </property>
   <property name="windowIcon">
    <iconset theme="microscope">
-    <normaloff>../generative_dataset_acquisition</normaloff>../generative_dataset_acquisition</iconset>
+    <normaloff>../../.designer/backup</normaloff>../../.designer/backup</iconset>
   </property>
   <property name="toolTip">
    <string>This is the main widow of the acquisition dashboard</string>
@@ -144,10 +144,13 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QLabel" name="status_motion_type">
+         <widget class="QLabel" name="status_protocol">
           <property name="font">
            <font>
-            <pointsize>28</pointsize>
+            <family>Segoe UI Variable Text Semibold</family>
+            <pointsize>20</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
            </font>
           </property>
           <property name="text">
@@ -156,17 +159,20 @@
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="status_action">
+         <widget class="QLabel" name="position_label">
           <property name="font">
            <font>
-            <pointsize>22</pointsize>
+            <pointsize>18</pointsize>
            </font>
           </property>
           <property name="text">
-           <string/>
+           <string>(0,0)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -764,7 +770,7 @@
        <x>10</x>
        <y>200</y>
        <width>491</width>
-       <height>74</height>
+       <height>121</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -805,19 +811,65 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLabel" name="qtm_connection_status">
-        <property name="font">
-         <font>
-          <pointsize>22</pointsize>
-         </font>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>22</number>
         </property>
-        <property name="text">
-         <string>Disconnected</string>
+        <property name="leftMargin">
+         <number>5</number>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+        <property name="rightMargin">
+         <number>5</number>
         </property>
-       </widget>
+        <item>
+         <widget class="QLabel" name="qtm_connection_status">
+          <property name="font">
+           <font>
+            <pointsize>22</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color:transparent;</string>
+          </property>
+          <property name="text">
+           <string>Disconnected</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="calibration_label">
+          <property name="font">
+           <font>
+            <family>Segoe UI Variable Small Semibol</family>
+            <pointsize>16</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: transparent;</string>
+          </property>
+          <property name="text">
+           <string>NOT Calibrated</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="margin">
+           <number>8</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <spacer name="horizontalSpacer_6">
@@ -833,46 +885,6 @@
        </spacer>
       </item>
      </layout>
-    </widget>
-    <widget class="QLabel" name="calbration_label_text">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>290</y>
-       <width>121</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Segoe UI Variable Small Semibol</family>
-       <pointsize>16</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Calibration:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="calibration_status_label">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>290</y>
-       <width>47</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: red;</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
     </widget>
    </widget>
   </widget>

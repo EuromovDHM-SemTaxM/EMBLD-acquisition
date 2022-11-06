@@ -1,11 +1,12 @@
 import sys
 
+from embld.experiment.protocol import EMBLDAcquisitionDriver
 from qtmrt import QTMException
 from qtmrt.client import QTMRTClient
 from util.logging import setup_logging
 import logging
 
-setup_logging(console_log_output="stdout", console_log_level="debug", console_log_color=True,
+setup_logging(console_log_output="stdout", console_log_level="warn", console_log_color=True,
               logfile_file="experiment.log", logfile_log_level="debug", logfile_log_color=False,
               log_line_template="%(color_on)s[%(created)d] [%(threadName)s] [%(levelname)-8s] %(message)s%(color_off)s")
 
@@ -23,6 +24,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
         super().__init__(parent)
         self.setupUi(self)
         self.qtm_client = None
+        self.driver = None
 
     def start_simulation(self):
         if not self.stop_button.isEnabled():
@@ -64,8 +66,22 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.qtm_group.setEnabled(False)
                 self.experiment_group.setEnabled(False)
                 self.play_button.setEnabled(False)
-
-                self.qtm_client.start_capture(True)
+                try:
+                    logger.debug("Starting acquisition driver...")
+                    self.driver = EMBLDAcquisitionDriver(self.qtm_client)
+                    logger.debug("Connecting timer...")
+                    self.driver.protocol_timer.connect(self.status_time_label.setText)
+                    self.driver.protocol_event.connect(self.status_protocol.setText)
+                    self.driver.protocol_event.connect(self.qtm_client.send_event)
+                    self.driver.position_event.connect(self.position_label.setText)
+                    self.driver.stop_experiment.connect(self.stop_button.setDown)
+                    logger.debug("Starting driver simulation...")
+                    self.driver.run_experiment()
+                    logger.debug("Starting QTM capture..")
+                    # self.qtm_client.new_measurement()
+                    self.qtm_client.start_capture(True)
+                except Exception as e:
+                    self.statusbar.showMessage(str(e))
 
         else:
             logger.info("Resuming simulation")
@@ -78,6 +94,8 @@ class Window(QMainWindow, Ui_MainWindowUI):
         logger.info("Stopping simulation")
         self.status_state_label.setText("STOPPED")
         self.status_state_label.setStyleSheet("color:red;")
+        del self.driver
+        self.driver = None
         self.qtm_client.stop_capture()
 
     def pause_simulation(self):
@@ -93,23 +111,38 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 if self.qtm_use_authentication.isChecked():
                     self.qtm_client = QTMRTClient("127.0.0.1", 22222, self.qtm_password.text())
                 else:
-                    self.qtm_client = QTMRTClient("127.0.0.1", 22222, self.qtm_password.text())
+                    self.qtm_client = QTMRTClient("127.0.0.1", 22222)
                 self.qtm_client.connect()
-                self.qtm_connection_status.setText("Connected!")
-                self.qtm_connection_status.setStyleSheet("color:green;")
+                self.qtm_connection_status.setText("Connected")
+                self.qtm_connection_status.setStyleSheet("color:green; font-size:1em;")
                 self.qtm_connect_btn.setStyleSheet("background-color:lightgreen;color:black;")
                 self.qtm_hostname.setEnabled(False)
                 self.qtm_port.setEnabled(False)
                 self.qtm_use_authentication.setEnabled(False)
                 self.auth_frame.setEnabled(False)
                 calibration_status = self.qtm_client.get_calibration_status()
-                print(calibration_status)
-            except QTMException:
-                logger.error("Aborting connection!")
+
+                if calibration_status['calibration']['calibrated'] == "true":
+                    self.calibration_label.setStyleSheet("color: green;")
+                    self.calibration_label.setText("Calibrated")
+                else:
+                    self.calibration_label.setStyleSheet("color: red; font-weight: bold; text-decoration: underline;")
+                    self.calibration_label.setText("NOT CALIBRATED")
+
+            except QTMException as e:
+                logger.error("Aborting connection: " + str(e))
+                self.qtm_connect_btn.setChecked(False)
+                self.qtm_connect_btn.setStyleSheet("background-color:red;")
+                self.qtm_connection_status.setStyleSheet("color: red; font-size:12px;")
+                self.qtm_connection_status.setText(str(e))
+                self.calibration_label.setStyleSheet("color: transparent;")
             # self.qtm_client.new_measurement()
         else:
             self.qtm_connection_status.setText("Disconnected")
+            self.qtm_connection_status.setStyleSheet("color:transparent;")
+            self.calibration_label.setStyleSheet("color: transparent;")
             self.qtm_connect_btn.setStyleSheet("color:black;background-color:none;")
+            self.calibration_label.setStyleSheet("color: transparent;")
             self.qtm_hostname.setEnabled(True)
             self.qtm_port.setEnabled(True)
             self.qtm_use_authentication.setEnabled(True)
