@@ -68,7 +68,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 logger.debug("Starting QTM capture..")
                 if not self.simulation_mode.isChecked():
                     self.qtm_client.new_measurement()
-                self.qtm_client.start_capture(True)
+                # self.qtm_client.start_capture(True)
             except Exception as e:
                 self.statusbar.showMessage(str(e))
 
@@ -115,7 +115,6 @@ class Window(QMainWindow, Ui_MainWindowUI):
 
                 calibration_status = self.qtm_client.get_calibration_status()
 
-                self.qtm_client.new_measurement()
 
                 if calibration_status['calibration']['calibrated'] == "true":
                     self.calibration_label.setStyleSheet("color: green;")
