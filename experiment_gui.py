@@ -199,6 +199,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
             self.auth_frame.setEnabled(True)
 
     def send_sync_event(self):
+        print("sync")
         self.qtm_client.send_event("sync")
         self.lsl_outlet.push_sample(['sync'])
 

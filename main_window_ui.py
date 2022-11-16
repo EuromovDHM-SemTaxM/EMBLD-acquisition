@@ -146,6 +146,7 @@ class Ui_MainWindowUI(object):
         icon2.addPixmap(QtGui.QPixmap(":/transition.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.event_button.setIcon(icon2)
         self.event_button.setIconSize(QtCore.QSize(64, 64))
+        self.event_button.setShortcut("")
         self.event_button.setObjectName("event_button")
         self.horizontalLayout_2.addWidget(self.event_button)
         spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -416,6 +417,7 @@ class Ui_MainWindowUI(object):
         self.qtm_connect_btn.toggled['bool'].connect(MainWindowUI.connect_qtm) # type: ignore
         self.next_button.clicked['bool'].connect(self.next_button.setEnabled) # type: ignore
         self.next_button.clicked.connect(MainWindowUI.next_step) # type: ignore
+        self.event_button.clicked.connect(MainWindowUI.send_sync_event) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindowUI)
 
     def retranslateUi(self, MainWindowUI):
@@ -428,7 +430,6 @@ class Ui_MainWindowUI(object):
         self.title_label.setText(_translate("MainWindowUI", "Experiment Dashboard"))
         self.play_button.setShortcut(_translate("MainWindowUI", "Ctrl+S"))
         self.next_button.setShortcut(_translate("MainWindowUI", "Return"))
-        self.event_button.setShortcut(_translate("MainWindowUI", "Space"))
         self.experiment_group.setTitle(_translate("MainWindowUI", "Experiment Settings"))
         self.exp_subject_id_label.setText(_translate("MainWindowUI", "Subject Identifier*:"))
         self.exp_age_label.setText(_translate("MainWindowUI", "Age*:"))
