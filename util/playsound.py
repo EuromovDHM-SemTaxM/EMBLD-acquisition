@@ -52,7 +52,7 @@ def _playsoundWin(sound, block = True):
 
     try:
         logger.debug('Starting')
-        winCommand(u'ffplay {}'.format(sound))
+        winCommand(u'ffplay.exe {}'.format(sound))
         # winCommand(u'play {}{}'.format(sound, ' wait' if block else ''))
         logger.debug('Returning')
     finally:
