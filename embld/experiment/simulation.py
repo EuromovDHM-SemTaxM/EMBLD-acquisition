@@ -2,8 +2,8 @@ import logging
 import threading
 
 from PyQt5.QtCore import QThread, pyqtSignal, QReadWriteLock
-from playsound import playsound
-from pydub.playback import play
+
+from util.playsound import playsound
 
 logger = logging.getLogger()
 
