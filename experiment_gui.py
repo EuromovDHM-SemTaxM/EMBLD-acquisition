@@ -68,7 +68,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 logger.debug("Starting QTM capture..")
                 if not self.simulation_mode.isChecked():
                     self.qtm_client.new_measurement()
-                # self.qtm_client.start_capture(True)
+                self.qtm_client.start_capture(False)
             except Exception as e:
                 self.statusbar.showMessage(str(e))
 
@@ -134,7 +134,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
 
         else:
             self.__update_ui_qtm_disconnection()
-            # self.qtm_client.close_measurement()
+            self.qtm_client.close_measurement()
             self.qtm_client.disconnect()
             del self.qtm_client
             self.qtm_client = None
