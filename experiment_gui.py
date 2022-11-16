@@ -52,7 +52,10 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.driver = EMBLDAcquisitionDriver(self.lsl_outlet)
 
                 logger.info("Starting driver simulation...")
-                status_slot = None if not self.simulation_mode.isChecked() else self.qtm_client.send_event
+                if not self.simulation_mode.isChecked():
+                    status_slot = None
+                else:
+                    status_slot = self.qtm_client.send_event
 
                 logger.info("Generating configurations...")
                 num_configurations = self.driver.generate_configurations()
