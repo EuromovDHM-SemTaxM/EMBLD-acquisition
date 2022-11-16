@@ -1,7 +1,6 @@
 import logging
 import sys
 
-from PyQt5 import QtGui, QtCore
 from pylsl import StreamInfo, StreamOutlet
 
 from embld.experiment.protocol import EMBLDAcquisitionDriver
@@ -61,7 +60,8 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.experiment_progress.setMaximum(num_configurations)
 
                 self.driver.run_experiment(timer_slot=self.status_time_label.setText,
-                                           status_slot=status_slot,
+                                           qtm_status_slot=status_slot,
+                                           lsl_status_slot=self.lsl_outlet,
                                            status_label_slot=self.status_protocol.setText,
                                            waiting_next_slot=self.waiting_for_next_step)
 
@@ -85,7 +85,6 @@ class Window(QMainWindow, Ui_MainWindowUI):
     #     del self.driver
     #     self.driver = None
     #     self.qtm_client.stop_capture()
-
 
     def waiting_for_next_step(self):
         logger.info("Pausing until next step is triggered...")
@@ -200,6 +199,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
     def send_sync_event(self):
         self.qtm_client.send_event("sync")
         self.lsl_outlet.push_sample(['sync'])
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
