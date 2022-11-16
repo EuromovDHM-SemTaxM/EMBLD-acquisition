@@ -114,6 +114,9 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.__update_ui_qtm_connection_successful()
 
                 calibration_status = self.qtm_client.get_calibration_status()
+
+                self.qtm_client.new_measurement()
+
                 if calibration_status['calibration']['calibrated'] == "true":
                     self.calibration_label.setStyleSheet("color: green;")
                     self.calibration_label.setText("Calibrated")
@@ -129,7 +132,7 @@ class Window(QMainWindow, Ui_MainWindowUI):
                 self.qtm_connection_status.setText(str(e))
                 self.calibration_label.setStyleSheet("color: transparent;")
 
-            # self.qtm_client.new_measurement()
+
         else:
             self.__update_ui_qtm_disconnection()
             # self.qtm_client.close_measurement()
