@@ -21,7 +21,7 @@ class SoundGenerationThread(QThread):
     def run(self):
         sound_location = APP_PARAMETERS['sound_location']
 
-        self.protocol_instance.add_sound("beep", f'{sound_location}/beep.wav')
+        self.protocol_instance.add_sound("beep", f'{sound_location}/beep.mp3')
         for configuration in tqdm(self.__generated_configurations, desc="Loading sounds in the background..."):
             instruction = configuration['instruction']
             hash_key = instruction.lower().replace(",", "_").replace(" ", "_").replace(".", "")
