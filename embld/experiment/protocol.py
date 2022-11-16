@@ -102,6 +102,7 @@ class EMBLDAcquisitionDriver(QObject):
         self.protocol.exit()
 
     def connect_timer(self, slot):
+        print(f"Connect {slot}")
         self.timer_thread.connect_timer_signal(slot)
 
     def connect_protocol_status_label(self, slot):
