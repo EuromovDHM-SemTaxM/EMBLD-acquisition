@@ -10,7 +10,7 @@ logger = logging.getLogger()
 
 
 def _play(path):
-    os.system(f'ffplay.exe "{path}"')
+    os.system(f'mpg123.exe "{path}"')
 
 
 class ProtocolSimulationThread(QThread):
