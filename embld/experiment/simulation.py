@@ -1,11 +1,16 @@
 import logging
+import os
 import threading
 
 from PyQt5.QtCore import QThread, pyqtSignal, QReadWriteLock
 
-from util.playsound import playsound
+# from util.playsound import playsound
 
 logger = logging.getLogger()
+
+
+def _play(path):
+    os.system(f'ffplay.exe "{path}"')
 
 
 class ProtocolSimulationThread(QThread):
@@ -43,8 +48,8 @@ class ProtocolSimulationThread(QThread):
             current_sound = self.sounds[key]
             self.lock.unlock()
 
-            playsound(current_sound, block=True)
-            playsound(beep_sound, block=True)
+            _play(current_sound)
+            _play(beep_sound)
 
             self.status_signal.emit(step['id'])
             self.wait_for_next_signal.emit()
