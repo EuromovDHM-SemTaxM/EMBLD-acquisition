@@ -66,7 +66,7 @@ def setup_logging(console_log_output, console_log_level, console_log_color, logf
 
     # Create log file handler
     try:
-        logfile_handler = logging.FileHandler(logfile_file)
+        logfile_handler = logging.FileHandler(logfile_file, mode="w", encoding="utf8")
     except Exception as exception:
         print("Failed to set up log file: %s" % str(exception))
         return False
