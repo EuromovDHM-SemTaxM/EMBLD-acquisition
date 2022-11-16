@@ -2,6 +2,7 @@ import logging
 import threading
 
 from PyQt5.QtCore import QThread, pyqtSignal, QReadWriteLock
+from playsound import playsound
 from pydub.playback import play
 
 logger = logging.getLogger()
@@ -42,8 +43,8 @@ class ProtocolSimulationThread(QThread):
             current_sound = self.sounds[key]
             self.lock.unlock()
 
-            play(current_sound)
-            play(beep_sound)
+            playsound(current_sound, block=True)
+            playsound(beep_sound, block=True)
 
             self.status_signal.emit(step['id'])
             self.wait_for_next_signal.emit()
