@@ -1,0 +1,142 @@
+{
+  "random_delays": "True",
+    "body_parts": {
+    "left_arm": {
+      "label": "left arm"
+    },
+    "right_arm": {
+      "label": "right arm"
+    },
+    "left_leg": {
+      "label": "left leg"
+    },
+    "right_leg": {
+      "label": "right leg"
+    },
+    "right_hand": {
+      "label": "right hand"
+    },
+    "left_hand": {
+      "label": "right hand"
+    }
+  },
+  "composition_types": {
+    "simultaneous": {
+      "syntactic_pattern": "{A1} while {A2}",
+      "modifiers": [
+        "",
+        "ing"
+      ]
+    },
+    "successive": {
+      "syntactic_pattern": "First, {A1}, then {A2}",
+      "modifiers": [
+        "",
+        ""
+      ]
+    }
+  },
+  "directions": {
+    "forward": {
+      "label": "forward"
+    },
+    "left": {
+      "label": "left"
+    },
+    "right": {
+      "label": "right"
+    }
+  },
+  "actions": {
+    "walk": {
+      "id": "walk",
+      "type": "atomic",
+      "instruction": "Walk{mod} {steps} steps",
+      "steps": "rand(2,5)",
+      "modifiers": [
+        {
+          "directions": [
+            "forward"
+          ],
+          "instruction": "Walk{mod} {steps} steps {directions}"
+        },
+        {
+          "directions": [
+            "left"
+          ],
+          "instruction": "Walk{mod} {steps} steps {directions}"
+        },
+                {
+          "directions": [
+            "right"
+          ],
+          "instruction": "Walk{mod} {steps} steps {directions}"
+        }
+      ]
+    },
+    "pick_up_something": {
+      "id": "pick_up_something",
+      "type": "atomic",
+      "instruction": "Pick{mod} something up",
+      "modifiers": [
+        {
+          "body_parts": [
+            "left_hand"
+          ],
+          "instruction": "Pick{mod} something up with your {body_parts}"
+        },
+        {
+          "body_parts": [
+            "right_hand"
+          ],
+          "instruction": "Pick{mod} something up with your {body_parts}"
+        }
+      ]
+    },
+    "stretch": {
+      "id": "stretch",
+      "type": "atomic",
+      "instruction": "Stretch{mod}",
+      "modifiers": [
+        {
+          "body_parts": [
+            "left_arm"
+          ],
+          "instruction": "Stretch{mod} your {body_parts}"
+        },
+        {
+          "body_parts": [
+            "right_arm"
+          ],
+          "instruction": "Stretch{mod} your {body_parts}"
+        },
+        {
+          "body_parts": [
+            "left_arm",
+            "right_arm"
+          ],
+          "instruction": "Stretch{mod} your arms"
+        }
+      ]
+    },
+    "walk_stretch": {
+      "id": "walk_stretch",
+      "type": "composite",
+      "constituents": [
+        "walk",
+        "stretch"
+      ],
+      "composition_type": "simultaneous"
+    },
+    "walk_pick_something_up": {
+      "id": "walk_pick_something_up",
+      "type": "composite",
+      "constituents": [
+        "walk",
+        "pick_up_something"
+      ],
+      "composition_type": "simultaneous"
+    }
+  },
+  "sound_location": "resources\\"
+}

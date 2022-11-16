@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>768</height>
+    <height>808</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -57,12 +57,25 @@
        <x>0</x>
        <y>30</y>
        <width>971</width>
-       <height>144</height>
+       <height>156</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item>
          <widget class="QLabel" name="status_state_label">
           <property name="palette">
@@ -104,7 +117,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>48</pointsize>
+            <pointsize>28</pointsize>
            </font>
           </property>
           <property name="text">
@@ -147,35 +160,32 @@
          <widget class="QLabel" name="status_protocol">
           <property name="font">
            <font>
-            <family>Segoe UI Variable Text Semibold</family>
-            <pointsize>20</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
+            <family>Segoe UI Variable Text Light</family>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
            </font>
           </property>
+          <property name="styleSheet">
+           <string notr="true">text-alight: left;</string>
+          </property>
+          <property name="locale">
+           <locale language="English" country="UnitedStates"/>
+          </property>
           <property name="text">
-           <string>Standing</string>
+           <string/>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="position_label">
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>(0,0)</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -266,13 +276,16 @@
        </property>
        <property name="icon">
         <iconset resource="main_windows.qrc">
-         <normaloff>:/play</normaloff>:/play</iconset>
+         <normaloff>:/play.png</normaloff>:/play.png</iconset>
        </property>
        <property name="iconSize">
         <size>
          <width>64</width>
          <height>64</height>
         </size>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+S</string>
        </property>
       </widget>
      </item>
@@ -290,7 +303,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pause_button">
+      <widget class="QPushButton" name="next_button">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -311,13 +324,16 @@
        </property>
        <property name="icon">
         <iconset resource="main_windows.qrc">
-         <normaloff>:/pause</normaloff>:/pause</iconset>
+         <normaloff>:/next.png</normaloff>:/next.png</iconset>
        </property>
        <property name="iconSize">
         <size>
          <width>64</width>
          <height>64</height>
         </size>
+       </property>
+       <property name="shortcut">
+        <string>Return</string>
        </property>
       </widget>
      </item>
@@ -335,34 +351,22 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="stop_button">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>64</width>
-         <height>64</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>64</width>
-         <height>64</height>
-        </size>
-       </property>
+      <widget class="QPushButton" name="event_button">
        <property name="text">
         <string/>
        </property>
        <property name="icon">
         <iconset resource="main_windows.qrc">
-         <normaloff>:/stop</normaloff>:/stop</iconset>
+         <normaloff>:/transition.png</normaloff>:/transition.png</iconset>
        </property>
        <property name="iconSize">
         <size>
          <width>64</width>
          <height>64</height>
         </size>
+       </property>
+       <property name="shortcut">
+        <string>Space</string>
        </property>
       </widget>
      </item>
@@ -384,8 +388,8 @@
    <widget class="QGroupBox" name="experiment_group">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>330</y>
+      <x>20</x>
+      <y>350</y>
       <width>451</width>
       <height>421</height>
      </rect>
@@ -600,7 +604,7 @@
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>330</y>
+      <y>360</y>
       <width>511</width>
       <height>341</height>
      </rect>
@@ -702,10 +706,13 @@
      <property name="text">
       <string>Use Authentication</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QFrame" name="auth_frame">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -781,13 +788,16 @@
         </property>
         <property name="icon">
          <iconset resource="main_windows.qrc">
-          <normaloff>:/connect</normaloff>:/connect</iconset>
+          <normaloff>:/connect.png</normaloff>:/connect.png</iconset>
         </property>
         <property name="iconSize">
          <size>
           <width>64</width>
           <height>64</height>
          </size>
+        </property>
+        <property name="shortcut">
+         <string/>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -886,6 +896,43 @@
       </item>
      </layout>
     </widget>
+    <widget class="QCheckBox" name="simulation_mode">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>320</y>
+       <width>181</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Segoe UI Variable Text Semibold</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Simulation Mode</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QProgressBar" name="experiment_progress">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>320</y>
+      <width>961</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="format">
+     <string>%v / %m (%p%)</string>
+    </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -911,38 +958,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>pause_button</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindowUI</receiver>
-   <slot>pause_simulation()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>872</x>
-     <y>102</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>658</x>
-     <y>346</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>stop_button</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindowUI</receiver>
-   <slot>stop_simulation()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>971</x>
-     <y>102</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>815</x>
-     <y>275</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>qtm_use_authentication</sender>
    <signal>toggled(bool)</signal>
    <receiver>auth_frame</receiver>
@@ -959,94 +974,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>stop_button</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>experiment_group</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>939</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>255</x>
-     <y>540</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>stop_button</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>qtm_group</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>939</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>745</x>
-     <y>475</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pause_button</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>play_button</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>840</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>742</x>
-     <y>66</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>stop_button</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>play_button</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>939</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>742</x>
-     <y>66</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>stop_button</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>pause_button</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>939</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>840</x>
-     <y>66</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>qtm_connect_btn</sender>
    <signal>toggled(bool)</signal>
    <receiver>MainWindowUI</receiver>
    <slot>connect_qtm(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>545</x>
-     <y>577</y>
+     <x>546</x>
+     <y>601</y>
     </hint>
     <hint type="destinationlabel">
      <x>607</x>
@@ -1055,43 +990,43 @@
    </hints>
   </connection>
   <connection>
-   <sender>stop_button</sender>
+   <sender>next_button</sender>
    <signal>clicked(bool)</signal>
-   <receiver>stop_button</receiver>
+   <receiver>next_button</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>939</x>
+     <x>840</x>
      <y>66</y>
     </hint>
     <hint type="destinationlabel">
-     <x>939</x>
+     <x>840</x>
      <y>66</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>pause_button</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>pause_button</receiver>
-   <slot>setEnabled(bool)</slot>
+   <sender>next_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindowUI</receiver>
+   <slot>next_step()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>840</x>
      <y>66</y>
     </hint>
     <hint type="destinationlabel">
-     <x>840</x>
-     <y>66</y>
+     <x>511</x>
+     <y>403</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <slots>
   <slot>start_simulation()</slot>
-  <slot>pause_simulation()</slot>
   <slot>stop_simulation()</slot>
   <slot>connect_qtm(bool)</slot>
+  <slot>next_step()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="exp_gender_group"/>

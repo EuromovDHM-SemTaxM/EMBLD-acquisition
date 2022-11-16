@@ -1,9 +1,9 @@
-import ruamel.yaml as yaml
+import json
 
 APP_PARAMETERS = {}
-with open("config.yaml", "r") as stream:
+with open("config.json", "r") as stream:
     try:
-        parameters = yaml.safe_load(stream)
+        parameters = json.load(stream)
         APP_PARAMETERS.update(parameters)
-    except yaml.YAMLError as exc:
+    except Exception as exc:
         print(exc)

@@ -1,227 +1,117 @@
-import datetime
-import glob
-import queue
-import time
-import timeit
-import typing
-from random import randint, shuffle
+import logging
+from random import sample
 
 import simpy.rt
-from PyQt5.QtCore import pyqtSignal, QObject, QThread
-from pyo import Server, SndTable, Osc
+from PyQt5.QtCore import QObject
+from tqdm import trange
 
 from embld.configuration import APP_PARAMETERS
-from qtmrt.client import QTMRTClient
+from embld.experiment.action_parser import generate_actions
+from embld.experiment.simulation import ProtocolSimulationThread
+from embld.experiment.sound_generator import SoundGenerationThread
+from util.timer import TimerEventThread
 
-
-class TimerEventThread(QThread):
-
-    def __init__(self, signal) -> None:
-        super().__init__()
-        self.signal = signal
-
-    def run(self):
-        start = time.monotonic() * 1000
-        while True:
-            self.msleep(1)
-            now = time.monotonic() * 1000 - start
-            seconds, ms = divmod(now, 1000)
-            minutes, seconds = divmod(seconds, 60)
-            self.signal.emit(f"{minutes:02.0f}'{seconds:02.0f}''{ms:03.0f}")
-
-        self.exec_()
-
-
-class AudioPlayer(QThread):
-
-    def __init__(self, sound_server) -> None:
-        super().__init__()
-        self.sound_server = sound_server
-        self.queue = queue.Queue()
-
-    def play_audio(self, sound_table):
-        self.queue.put(sound_table, block=False)
-
-    def run(self):
-        while True:
-            t = self.queue.get()
-            a = Osc(table=t, freq=t.getRate(), mul=1).out()
-            self.sound_server.start()
-            self.msleep(int(t.getDur() * 1000))
-            print(int(t.getDur() * 1000))
-            self.sound_server.stop()
-        self.exec_()
-
-
-class ProtocolSimulationThread(QThread):
-
-    def __init__(self, env, status_signal, position_signal, steps, beep_sound, audio_player) -> None:
-        super().__init__()
-        self.env = env
-        self.status_signal = status_signal
-        self.position_signal = position_signal
-        self.steps = steps
-        self.audio_player = audio_player
-        self.beep_sound = beep_sound
-
-    def run(self):
-        for step in self.steps:
-            # configuration = step['configuration']
-
-            duration = step['duration']
-            sound_duration = step['sound_duration'] + self.beep_sound.getDur()
-            print(duration, sound_duration)
-
-            # Playing STOP beep
-            self.audio_player.play_audio(self.beep_sound)
-            self.status_signal.emit("STOP")
-
-            # Playing Instructions and emitting start marker
-            self.audio_player.play_audio(step['sound'])
-            self.msleep(int(sound_duration * 1000))
-            self.status_signal.emit(step['label'])
-            self.position_signal.emit(f"{step['position'][0]}, {step['position'][1]}")
-            self.msleep(int(duration))
-
-        self.exec_()
+logger = logging.getLogger()
 
 
 class EMBLDAcquisitionDriver(QObject):
-    protocol_event = pyqtSignal(str)
-    position_event = pyqtSignal(str)
-    protocol_timer = pyqtSignal(str)
-    stop_experiment = pyqtSignal()
 
-    def __init__(self, qtm_client: QTMRTClient):
+    def __init__(self, lsl_outlet):
         super().__init__()
-        # self.__locomotion = APP_PARAMETERS['locomotion']
-        self.__modifiers = APP_PARAMETERS['modifiers']
-        self.__transitions = APP_PARAMETERS['transitions']
+
         self.__actions = APP_PARAMETERS['actions']
-        self.__sound_server = Server(buffersize=1024, duplex=0, winhost="directsound").boot()
-        self.__sound_server.deactivateMidi()
-        self.__qtm_client = qtm_client
-        self.__sounds = {}
-        self.__preload_sounds()
-        self.__generate_configurations()
+        self.__body_parts = APP_PARAMETERS['body_parts']
+        self.__directions = APP_PARAMETERS['directions']
+        self.__composition_types = APP_PARAMETERS['composition_types']
         self.__time_factor = 0.1
+        self.__sounds = {}
+        self.timer_thread = None
+        self.protocol = None
+        self.lsl_outlet = lsl_outlet
 
-    def __generate_configurations(self):
+    # def send_sync_event(self):
+    #     self.__push_lsl_event("sync")
+
+    def generate_configurations(self):
+        generated_actions = generate_actions()
         self.generated_configurations = []
-        # for i in range(len(self.__locomotion)):
-        for j in range(len(self.__modifiers)):
-            for p in range(len(self.__transitions)):
-                for k in range(len(self.__actions)):
-                    self.generated_configurations.append(
-                        {'transition': self.__transitions[p], 'modifier': self.__modifiers[j],
-                         'action': self.__actions[k]})
-
-    def __preload_sounds(self):
-        sound_location = APP_PARAMETERS['sound_location']
-        for filename in glob.iglob(f'{sound_location}/*.wav'):
-            basename = filename.split("\\")[-1].split(".")[0]
-            self.__sounds[basename] = f"{filename}"
-
-    @staticmethod
-    def __generate_random_sequence(max_value, seq_len):
-        sequence = []
-        a = max_value
-        b = a * 0.2
-        m = randint(0, a - b)
-        N = seq_len
-        for i in range(0, int(N / 2)):
-            sequence.append(m + randint(0, b))
-        for i in range(int(N / 2), N):
-            sequence.append(a - m - randint(0, b))
-
-        shuffle(sequence)
-        return sequence
+        for i in trange(len(generated_actions)):
+            for j in range(len(generated_actions)):
+                a_1 = generated_actions[i]
+                a_2 = generated_actions[j]
+                id_1 = a_1['id']
+                id_2 = a_2['id']
+                if id_1 != id_2:
+                    self.__actions[f"{id_1}_then_{id_2}"] = {
+                        "id": f"{id_1}_then_{id_2}",
+                        "type": "composite",
+                        "composition_type": "successive",
+                        "constituents": [
+                            id_1,
+                            id_2
+                        ]
+                    }
+        generated_actions = generate_actions()
+        self.generated_configurations = [action for action in generated_actions if
+                                         action['type'] == "composite" and action['composition_type'] == "successive"]
+        return len(self.generated_configurations)
 
     def sample_configurations(self):
-        """
-        0,0 lower left corner
-        """
-        baseline_duration = APP_PARAMETERS['segment_duration']
-        random_delay_sequence = self.__generate_random_sequence(1000,
-                                                                len(self.generated_configurations))
         configurations = self.generated_configurations.copy()
-        current_position = (0, 0)
-        generated_sequence = []
-        i = 0
-        while len(configurations) > 0:
-            next_configuration, current_position, configurations = self.__sample_next(current_position,
-                                                                                      configurations)
-            transition = "transition_" + list(next_configuration['transition'].keys())[0].replace(" ", "_")
-            # locomotion = "locomotion_" + next_configuration['locomotion'].replace(" ", "_")
-            modifier = "modifier_" + next_configuration['modifier'].replace(" ", "_")
-            action = "action_" + next_configuration['action'].replace(" ", "_")
-            sound = SndTable()
-            sound.append(self.__sounds[transition])
-            # sound.append(self.__sounds[locomotion])
-            if "none" not in modifier:
-                sound.append(self.__sounds[modifier])
-            if "none" not in action:
-                sound.append(self.__sounds[action])
-            sound.append(self.__sounds["beep"])
+        return sample(configurations, len(configurations))
 
-            generated_sequence.append(
-                {'configuration': next_configuration, 'position': current_position,
-                 'duration': baseline_duration + random_delay_sequence[i], 'sound': sound,
-                 'sound_duration': sound.getDur(),
-                 'label': list(next_configuration['transition'].keys())[0].replace(" ", "_") + "_" +
-                          next_configuration['modifier'].replace(" ", "_") + "_" +
-                          next_configuration['action'].replace(" ", "_")})
-            i += 1
+    def next_step(self):
+        self.protocol.next_segment()
 
-        return generated_sequence
+    def pause_until_next_step(self):
+        self.protocol.wait_for_next()
 
-    @staticmethod
-    def __sample_next(current_position, remaining_configurations):
-        found_valid_sample = False
-        next_configuration = None
-        already_drawn = []
-        next_position = current_position
-        while not found_valid_sample:
-            r = randint(0, len(remaining_configurations) - 1)
-            if r in already_drawn:
-                continue
-            already_drawn.append(r)
-            next_configuration = remaining_configurations[r]
-            orientation = next_configuration['transition'][list(next_configuration['transition'].keys())[0]][0][
-                'orientation']
-            # If along leftmost edge, cannot go left
-            if current_position[0] == 0:
-                if orientation == -90:
-                    continue
-            if current_position[0] == 1:  # If along rightmost edge, cannot go right
-                if orientation == 90:
-                    continue
-            if current_position[1] == 0 and abs(orientation) == 180:
-                # If at the beginning of the area, cannot turnaround (wall)
-                continue
-            if current_position[1] == 2 and (orientation == 0 or orientation == 360):
-                # If at the very end of the area, cannot keep going forward (wall)
-                continue
-
-            if orientation == 0 or orientation == 360:
-                next_position = (next_position[0], next_position[1] + 1)
-            if orientation == 90:
-                next_position = (next_position[0] + 1, next_position[1])
-            if orientation == -90:
-                next_position = (next_position[0] - 1, next_position[1])
-            if abs(orientation) == 180:
-                next_position = (next_position[0], next_position[1] - 1)
-
-            found_valid_sample = True  # If no constraints invalidate the configuration, we keep it
-            del remaining_configurations[r]
-        return next_configuration, next_position, remaining_configurations
-
-    def run_experiment(self):
+    def run_experiment(self, timer_slot, qtm_status_slot, lsl_status_slot, status_label_slot, waiting_next_slot):
         env = simpy.rt.RealtimeEnvironment(factor=0.1)
-        timer_thread = TimerEventThread(self.protocol_timer)
-        audio_player = AudioPlayer(self.__sound_server)
-        audio_player.start()
-        protocol = ProtocolSimulationThread(env, self.protocol_event, self.position_event, self.sample_configurations(),
-                                            SndTable(self.__sounds["beep"]), audio_player)
-        protocol.start()
-        timer_thread.start()
+        self.timer_thread = TimerEventThread()
+        if len(self.generated_configurations) == 0:
+            logger.info("Generating configurations...")
+            self.generate_configurations()
+        configurations = self.sample_configurations()
+
+        self.protocol = ProtocolSimulationThread(env, configurations)
+
+        generator = SoundGenerationThread(configurations, self.protocol)
+        generator.start()
+        generator.wait(3000)
+
+        if qtm_status_slot is not None:
+            self.connect_protocol_status(qtm_status_slot)
+        if lsl_status_slot is not None:
+            def __push_lsl_event(event: str):
+                lsl_status_slot.push_sample([event])
+
+            self.connect_protocol_status(__push_lsl_event)
+
+        self.connect_timer(timer_slot)
+        self.connect_protocol_status_label(status_label_slot)
+        self.connect_wait_for_next_step(waiting_next_slot)
+
+        logger.info("Starting protocol and timer threads...")
+        self.protocol.start()
+        self.timer_thread.start()
+        return len(configurations)
+
+    def stop_threads(self):
+        self.timer_thread.exit()
+        self.protocol.exit()
+
+    def connect_timer(self, slot):
+        self.timer_thread.connect_timer_signal(slot)
+
+    def connect_protocol_status_label(self, slot):
+        self.protocol.connect_status_label_signal(slot)
+
+    def connect_protocol_status(self, slot):
+        self.protocol.connect_status_signal(slot)
+
+    def connect_experiment_end(self, slot):
+        self.protocol.connect_stop_experiment_signal(slot)
+
+    def connect_wait_for_next_step(self, slot):
+        self.protocol.connect_wait_for_next_signal(slot)
