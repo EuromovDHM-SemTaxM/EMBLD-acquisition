@@ -19,25 +19,24 @@ class ProtocolSimulationThread(QThread):
     wait_for_next_signal = pyqtSignal()
     stop_experiment_signal = pyqtSignal()
 
-    def __init__(self, env, steps) -> None:
+    def __init__(self, env, steps, timer) -> None:
         super().__init__()
         self.env = env
         self.steps = steps
         self.event = None
         self.sounds = {}
+        self.timer = timer
         self.lock = QReadWriteLock()
         logger.info("Initializing protocol thread...")
-
-        # self.mutex.unlock()
 
     def run(self):
         logger.info("Creating event lock and setting it...")
         # self.wait_for_next_signal.emit()
         self.event = threading.Event()
-        self.next_segment()
+        self.next_trial()
         for step in self.steps:
             self.event.wait(timeout=None)
-            self.wait_for_next()
+            self.wait_for_next_trial()
             logger.info("\tUnlocking...")
             key = step['instruction'].lower().replace(",", "_").replace(" ", "_").replace(".", "")
             self.status_signal_label.emit(step['instruction'])
@@ -50,17 +49,18 @@ class ProtocolSimulationThread(QThread):
 
             _play(current_sound)
             _play(beep_sound)
-
-            self.status_signal.emit(step['id'])
+            num_segments = 1 if step['type'] == "atomic" else 2
+            self.status_signal.emit(str(self.timer.now()))
+            self.status_signal.emit(step['id'] + "@" + str(num_segments))
             self.wait_for_next_signal.emit()
         self.stop_experiment_signal.emit()
         self.exec_()
 
-    def wait_for_next(self):
+    def wait_for_next_trial(self):
         if self.event is not None:
             self.event.clear()
 
-    def next_segment(self):
+    def next_trial(self):
         self.event.set()
 
     def connect_status_signal(self, slot):

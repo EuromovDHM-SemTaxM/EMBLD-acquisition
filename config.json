@@ -1,6 +1,6 @@
 {
   "random_delays": "True",
-    "body_parts": {
+  "body_parts": {
     "left_arm": {
       "label": "left arm"
     },
@@ -12,6 +12,12 @@
     },
     "right_leg": {
       "label": "right leg"
+    },
+    "left_foot": {
+      "label": "left foot"
+    },
+    "right_foot": {
+      "label": "right foot"
     },
     "right_hand": {
       "label": "right hand"
@@ -47,7 +53,34 @@
       "label": "right"
     }
   },
+  "speed": {
+    "slowly": {
+      "label": "slowly"
+    },
+    "quickly": {
+      "label": "quickly"
+    }
+  },
   "actions": {
+    "turn": {
+      "id": "turn",
+      "type": "atomic",
+      "instruction": "Turn{mod}",
+      "modifiers": [
+        {
+          "directions": [
+            "left"
+          ],
+          "instruction": "Turn{mod} {directions}"
+        },
+        {
+          "directions": [
+            "right"
+          ],
+          "instruction": "Turn{mod} {directions}"
+        }
+      ]
+    },
     "walk": {
       "id": "walk",
       "type": "atomic",
@@ -55,88 +88,118 @@
       "steps": "rand(2,5)",
       "modifiers": [
         {
-          "directions": [
-            "forward"
+          "speed": [
+            "slowly"
           ],
-          "instruction": "Walk{mod} {steps} steps {directions}"
+          "instruction": "Walk{mod} {steps} steps {speed}"
         },
         {
-          "directions": [
-            "left"
+          "speed": [
+            "quickly"
           ],
-          "instruction": "Walk{mod} {steps} steps {directions}"
+          "instruction": "Walk{mod} {steps} steps {speed}"
+        }
+      ]
+    },
+    "stomp": {
+      "id": "stomp",
+      "type": "atomic",
+      "instruction": "Stomp",
+      "modifiers": [
+        {
+          "body_parts": [
+            "right_foot"
+          ],
+          "instruction": "Stomp{mod} on the right"
         },
-                {
-          "directions": [
-            "right"
+        {
+          "body_parts": [
+            "left_foot"
           ],
-          "instruction": "Walk{mod} {steps} steps {directions}"
+          "instruction": "Stomp{mod} on the left"
+        }
+      ]
+    },
+    "kick": {
+      "id": "kick",
+      "type": "atomic",
+      "instruction": "Kick{mod}",
+      "modifiers": [
+        {
+          "body_parts": [
+            "right_leg"
+          ],
+          "instruction": "Kick{mod} with the {body_parts}"
+        },
+        {
+          "body_parts": [
+            "left_leg"
+          ],
+          "instruction": "Kick{mod} with the {body_parts}"
         }
       ]
     },
     "pick_up_something": {
       "id": "pick_up_something",
       "type": "atomic",
-      "instruction": "Pick{mod} something up",
+      "instruction": "Pick{mod} something up"
+    },
+    "bend": {
+      "id": "bend",
+      "type": "atomic",
+      "instruction": "Bend{mod}"
+    },
+    "jump": {
+      "id": "jump",
+      "type": "atomic",
+      "instruction": "Jump{mod}"
+    },
+    "wave": {
+      "id": "wave",
+      "type": "atomic",
+      "instruction": "Wave{mod}",
       "modifiers": [
         {
           "body_parts": [
             "left_hand"
           ],
-          "instruction": "Pick{mod} something up with your {body_parts}"
+          "instruction": "Wave{mod} with your {body_parts}"
         },
         {
           "body_parts": [
             "right_hand"
           ],
-          "instruction": "Pick{mod} something up with your {body_parts}"
-        }
-      ]
-    },
-    "stretch": {
-      "id": "stretch",
-      "type": "atomic",
-      "instruction": "Stretch{mod}",
-      "modifiers": [
-        {
-          "body_parts": [
-            "left_arm"
-          ],
-          "instruction": "Stretch{mod} your {body_parts}"
+          "instruction": "Wave{mod} with your {body_parts}"
         },
         {
           "body_parts": [
-            "right_arm"
+            "left_hand",
+            "right_hand"
           ],
-          "instruction": "Stretch{mod} your {body_parts}"
-        },
-        {
-          "body_parts": [
-            "left_arm",
-            "right_arm"
-          ],
-          "instruction": "Stretch{mod} your arms"
+          "instruction": "Wave{mod} with both hands"
         }
       ]
     },
-    "walk_stretch": {
-      "id": "walk_stretch",
+    "walk_wave": {
+      "id": "walk_wave",
       "type": "composite",
       "constituents": [
         "walk",
-        "stretch"
+        "wave"
       ],
       "composition_type": "simultaneous"
     },
-    "walk_pick_something_up": {
-      "id": "walk_pick_something_up",
+    "walk_jump": {
+      "id": "walk_jump",
       "type": "composite",
       "constituents": [
         "walk",
-        "pick_up_something"
+        "jump"
       ],
       "composition_type": "simultaneous"
     }
   },
-  "sound_location": "resources\\"
+  "sound_location": "resources\\",
+  "base_output_path": "recordings\\",
+  "sample": 100
 }
