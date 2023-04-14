@@ -201,5 +201,7 @@
   },
   "sound_location": "resources\\",
   "base_output_path": "recordings\\",
-  "sample": 100
+  "sample": 100,
+  "trial_segments": 1,
+  "sampling_rate": 100
 }

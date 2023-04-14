@@ -1,10 +1,24 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QPushButton, QGroupBox, QFormLayout, \
-    QLineEdit, QSpinBox, QRadioButton, QButtonGroup, QPlainTextEdit, QProgressBar, QSizePolicy
-from PyQt5.uic.Compiler.qtproxies import QtWidgets
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QGroupBox,
+    QFormLayout,
+    QLineEdit,
+    QSpinBox,
+    QRadioButton,
+    QButtonGroup,
+    QPlainTextEdit,
+    QProgressBar,
+    QSizePolicy,
+)
 
-from gui import main_windows_rc
+from gui.main_windows_rc import *
 
 class DashboardView(QMainWindow):
     def __init__(self, parent=None):
@@ -38,7 +52,9 @@ class DashboardView(QMainWindow):
     def setup_ui(self):
         self.setObjectName("MainWindowUI")
         self.resize(self.START_WINDOW_WIDTH, self.START_WINDOW_HEIGHT)
-        self.setMinimumSize(QtCore.QSize(self.START_WINDOW_WIDTH, self.START_WINDOW_HEIGHT))
+        self.setMinimumSize(
+            QtCore.QSize(self.START_WINDOW_WIDTH, self.START_WINDOW_HEIGHT)
+        )
         self.setWindowTitle("EMBLD Acquisiton Dashboard")
 
         self._status_bar = self.statusBar()
@@ -83,7 +99,9 @@ class DashboardView(QMainWindow):
         button_hbox.addWidget(self.next_button)
 
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/transition.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(":/transition.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off
+        )
         self.event_button = QPushButton(icon, "", top_panel)
         self.event_button.setIconSize(QtCore.QSize(64, 64))
         self.event_button.setMaximumWidth(64)
@@ -97,11 +115,12 @@ class DashboardView(QMainWindow):
 
         self.subject_panel = QGroupBox("Experiment Setting")
         self.subject_panel.setMinimumWidth(self.START_WINDOW_WIDTH - 20)
-        self.subject_panel.setStyleSheet("font-family: Segoe UI Semilight; font-size:16pt;")
+        self.subject_panel.setStyleSheet(
+            "font-family: Segoe UI Semilight; font-size:16pt;"
+        )
 
         subject_panel_layout = QHBoxLayout(root_widget)
         self.subject_panel.setLayout(subject_panel_layout)
-
 
         left_subject_pane = QWidget(self.subject_panel)
         left_subject_pane_layout = QFormLayout(left_subject_pane)
@@ -109,9 +128,10 @@ class DashboardView(QMainWindow):
         left_subject_pane_layout.setVerticalSpacing(50)
         subject_panel_layout.addWidget(left_subject_pane)
 
-
         self.exp_subject_id = QLineEdit()
-        self.exp_subject_id.setStyleSheet("font-family: Segoe UI Semilight; font-size:12pt;")
+        self.exp_subject_id.setStyleSheet(
+            "font-family: Segoe UI Semilight; font-size:12pt;"
+        )
         self.exp_subject_id_label = QLabel("Subject Identifier*")
         self.exp_subject_id_label.setStyleSheet("font-weight:bold;font-size:12pt;")
         left_subject_pane_layout.addRow(self.exp_subject_id_label, self.exp_subject_id)
@@ -126,7 +146,9 @@ class DashboardView(QMainWindow):
 
         self.exp_session = QSpinBox()
         self.exp_session.setValue(1)
-        self.exp_session.setStyleSheet("font-family: Segoe UI Semilight; font-size:12pt;")
+        self.exp_session.setStyleSheet(
+            "font-family: Segoe UI Semilight; font-size:12pt;"
+        )
         self.exp_session_label = QLabel("Session Number")
         self.exp_session_label.setStyleSheet("font-size:10pt;")
         left_subject_pane_layout.addRow(self.exp_session_label, self.exp_session)
@@ -234,7 +256,10 @@ class DashboardView(QMainWindow):
             self.exp_gender_label.setStyleSheet("color:black;")
 
         if error:
-            self._status_bar.showMessage("Please fill in the fields in RED before staring the simulation...", 4000)
+            self._status_bar.showMessage(
+                "Please fill in the fields in RED before staring the simulation...",
+                4000,
+            )
 
         return not error
 
@@ -243,8 +268,8 @@ class DashboardView(QMainWindow):
         self.exp_age_label.setStyleSheet("color:black;")
         self.exp_gender_label.setStyleSheet("color:black;")
         self.running_state = 0
-        self.status_state_label.setText(f"RUNNING {self.running_state}")
-        self.status_state_label.setStyleSheet("color:green;")
+        self.status_state_label.setText("PRESS SPACE TO START")
+        self.status_state_label.setStyleSheet("color:orange;")
         self.status_time_label.setVisible(False)
         self.next_button.setEnabled(False)
         self.event_button.setEnabled(True)
@@ -252,9 +277,9 @@ class DashboardView(QMainWindow):
         self.play_button.setEnabled(False)
 
     def increment_running(self):
-        if self.status_time_label.isVisible():
-            self.running_state+=1
-            self.status_state_label.setText(f"RUNNING {self.running_state}")
+        self.status_state_label.setStyleSheet("color:green;")
+        self.status_state_label.setText(f"RUNNING {self.running_state}")
+        self.running_state += 1
 
     def set_progressbar_start_experiment(self, num_configurations):
         self.experiment_progress.setMinimum(0)
@@ -270,8 +295,8 @@ class DashboardView(QMainWindow):
         self.event_button.setEnabled(False)
 
     def set_next_step(self):
-        self.status_state_label.setText("RUNNING")
-        self.status_state_label.setStyleSheet("color:green;")
+        self.status_state_label.setText("PRESS SPACE TO START")
+        self.status_state_label.setStyleSheet("color:orange;")
         self.next_button.setEnabled(False)
         self.event_button.setEnabled(True)
         self.experiment_progress.setValue(self.experiment_progress.value() + 1)
@@ -283,12 +308,11 @@ class DashboardView(QMainWindow):
         self.status_time_label.setVisible(True)
 
     def subject_metadata(self):
-        metadata = dict()
-        metadata['id'] = self.exp_subject_id.text()
-        metadata['age'] = self.exp_age.text()
-        metadata['sex'] = self.gender_radio_group.checkedButton().text()
-        metadata['notes'] = self.subject_notes.toPlainText()
-        metadata['session'] = self.exp_session.value()
+        metadata = {"id": self.exp_subject_id.text()}
+        metadata["age"] = self.exp_age.text()
+        metadata["sex"] = self.gender_radio_group.checkedButton().text()
+        metadata["notes"] = self.subject_notes.toPlainText()
+        metadata["session"] = self.exp_session.value()
         return metadata
 
     def connect_start_simulation(self, slot):
