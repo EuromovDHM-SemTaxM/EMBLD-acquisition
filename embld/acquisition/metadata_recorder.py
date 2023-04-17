@@ -1,6 +1,8 @@
 import json
 import logging
 from pathlib import Path
+import threading
+from time import sleep
 
 from embld.acquisition import TrialRecorder
 from embld.experiment.utils import subject_string_trial
@@ -44,7 +46,9 @@ class MetadataRecorder(TrialRecorder):
         pass
 
     def acquire(self, num_samples):
-        logger.debug(f"Acquiring {num_samples} samples")
+        while not self.next_segment:
+            sleep_time = int(num_samples/self.sampling_rate)
+            sleep(sleep_time)
         return []
 
     def coalesce_and_save(self, raws):
@@ -65,11 +69,12 @@ class MetadataRecorder(TrialRecorder):
         )
         logger.info(f"Metadata saved under {str(target_path_meta)}")
 
-    def __init__(self, metadata, trial_segments: int = 2, base_output_path=".", inst=1):
+    def __init__(self, metadata, trial_segments: int = 2, base_output_path=".", inst=1,  sampling_rate = 50):
         super(MetadataRecorder, self).__init__(
             metadata, trial_segments, base_output_path
         )
         self.unit = None
+        self.sampling_rate = sampling_rate
         self.current_trial_label = None
 
     def receive_label(self, label):

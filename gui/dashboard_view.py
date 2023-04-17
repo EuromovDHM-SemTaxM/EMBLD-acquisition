@@ -227,7 +227,7 @@ class DashboardView(QMainWindow):
 
         layout.addStretch(1)
         self.experiment_progress = QProgressBar(root_widget)
-        self.experiment_progress.setMinimum(0)
+        self.experiment_progress.setMinimum(1)
         self.experiment_progress.setMaximum(100)
         self.experiment_progress.setFormat("%v / %m (%p%)")
         layout.addWidget(self.experiment_progress)

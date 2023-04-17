@@ -80,8 +80,8 @@ class TrialRecorder(QObject):
                 logger.debug(f"Segment duration: {end - start}")
                 current_trial+=1
             self.end_acquisition()
-
             self.coalesce_and_save(raws)
+
             self.trial_number += 1
 
     def handle_protocol_events(self, event_name: str) -> None:
@@ -96,7 +96,7 @@ class TrialRecorder(QObject):
             parts = event_name.split("@")
             self.ongoing_start_time = now_absolute()
             self.current_trial_id = parts[0]
-            self.trial_segments = int(parts[1])
+            self.trial_segments = int(parts[1]) + 1
             self.current_segment = 1
             self.segment_completed = False
             self.next_trial()

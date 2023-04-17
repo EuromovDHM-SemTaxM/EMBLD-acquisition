@@ -232,6 +232,8 @@ class EMBLDAcquisitionDriver(QObject):
         
 
         self.sync_signal.connect(increment_segment_slot)
+        
+        self.protocol.connect_stop_experiment_signal
 
         def protocol_ready():
             self.protocol.ready()
@@ -277,5 +279,9 @@ class EMBLDAcquisitionDriver(QObject):
         self.timer_thread.exit()
         self.protocol.exit()
 
-    # def connect_experiment_end(self, slot):
-    #     self.protocol.connect_stop_experiment_signal(slot)
+    def end_experiment(self):
+        self.stop_threads()
+    
+    def connect_experiment_end(self, slot):
+        self.protocol.connect_stop_experiment_signal(slot)
+        self.protocol.connect_stop_experiment_signal(self.end_experiment)

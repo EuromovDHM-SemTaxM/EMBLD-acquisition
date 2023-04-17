@@ -88,11 +88,7 @@ class QTMMocapRecorder(TrialRecorder):
 
         c3d.add_parameter("EVENT", "USED", len(self.annotation_onsets))
         c3d.add_parameter("EVENT", "LABELS", list(self.annotation_descriptions))
-        c3d.add_parameter(
-            "EVENT",
-            "TIMES",
-            [self.sampling_rate * onset for onset in self.annotation_onsets],
-        )
+        c3d.add_parameter("EVENT", "TIMES", list(self.annotation_onsets))
 
         subject_str = subject_string_trial(
             self.metadata, self.trial_number, self.current_trial_id

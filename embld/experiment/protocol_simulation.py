@@ -39,12 +39,11 @@ class ProtocolSimulationThread(QThread):
         self.ready_event = threading.Event()
         self.not_ready()
         self.next_trial()
+        step_num = 0
         for step in self.steps:
             self.post_wait = False
             self.not_ready()
             self.trial_event.wait(timeout=None)
-            self.wait_for_next_trial()
-            logger.debug("Protocol: \tUnlocking...")
             key = (
                 step["instruction"]
                 .lower()
@@ -52,16 +51,21 @@ class ProtocolSimulationThread(QThread):
                 .replace(" ", "_")
                 .replace(".", "")
             )
+            
+            self.lock.lockForRead()
+            beep_sound = self.sounds["beep"]
+            current_sound = self.sounds[key]
+            self.lock.unlock()
+            
+            self.wait_for_next_trial()
+            _play(beep_sound)
+            
+            logger.debug("Protocol: \tUnlocking...")
             num_segments = 1 if step["type"] == "atomic" else 2
             self.status_signal.emit(str(self.timer.now()))
             self.status_signal.emit(step["id"] + "@" + str(num_segments))
             self.status_signal_label.emit(step["instruction"])
             logger.debug(f"Protocol: Playing sound for {step['id']}")
-
-            self.lock.lockForRead()
-            beep_sound = self.sounds["beep"]
-            current_sound = self.sounds[key]
-            self.lock.unlock()
 
             _play(current_sound)
 
@@ -70,9 +74,10 @@ class ProtocolSimulationThread(QThread):
                 f"Protocol: Resuming after sync: PW={self.post_wait} L={self.ready_event._flag}"
             )
 
-            _play(beep_sound)
-            self.wait_for_next_signal.emit()
-        self.stop_experiment_signal.emit()
+            if step_num < len(self.steps) - 1:
+                self.wait_for_next_signal.emit()
+            else:
+                self.stop_experiment_signal.emit()
         self.exec_()
 
     def wait_for_next_trial(self):

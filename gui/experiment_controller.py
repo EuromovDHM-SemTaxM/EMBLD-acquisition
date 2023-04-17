@@ -11,6 +11,8 @@ from util.timer import now_absolute
 
 logger = logging.getLogger("Experiment Dashboard")
 
+from PyQt5.QtWidgets import QApplication
+
 
 class ExperimentGUIController:
     def __init__(self, view: DashboardView):
@@ -44,12 +46,13 @@ class ExperimentGUIController:
             recorders = {
                 "metadata": MetadataRecorder(metadata, trial_segments=trial_segments, inst=1),
                 #"metadata2": MetadataRecorder(metadata, trial_segments=trial_segments, inst=2),
-                "mocap": QTMMocapRecorder(metadata, trial_segments=trial_segments),
+                #"mocap": QTMMocapRecorder(metadata, trial_segments=trial_segments),
                 # 'fnirs': ArtinisFNIRSRecorder(metadata, trial_segments=trial_segments)
             }
 
             logger.debug("Generating configurations...")
             self.driver.generate_configurations()
+        
 
             status_label_slot = self.view.get_status_slot()
             num_configurations = self.driver.run_experiment(
@@ -63,6 +66,8 @@ class ExperimentGUIController:
             )
             self.view.set_progressbar_start_experiment(num_configurations)
             self.time = now_absolute()
+            
+            self.driver.connect_experiment_end(QApplication.quit)
 
             # except Exception as e:
             #     print(e)
