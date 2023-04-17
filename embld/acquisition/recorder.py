@@ -51,7 +51,7 @@ class TrialRecorder(QObject):
         pass
 
     def run(self) -> None:
-        debugpy.debug_this_thread()
+        # debugpy.debug_this_thread()
         self.trial_start_event = threading.Event()
         while not self.terminated:
             self.trial_start_event.wait(timeout=None)
