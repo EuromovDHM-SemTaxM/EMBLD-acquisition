@@ -23,7 +23,7 @@
       "label": "right hand"
     },
     "left_hand": {
-      "label": "right hand"
+      "label": "left hand"
     }
   },
   "composition_types": {
@@ -139,10 +139,59 @@
         }
       ]
     },
+    "punch": {
+      "id": "punch",
+      "type": "atomic",
+      "instruction": "Punch{mod}",
+      "modifiers": [
+        {
+          "body_parts": [
+            "right_arm"
+          ],
+          "instruction": "Punch{mod} with the {body_parts}"
+        },
+        {
+          "body_parts": [
+            "left_arm"
+          ],
+          "instruction": "Punch{mod} with the {body_parts}"
+        }
+      ]
+    }
+    ,
+    "throw": {
+      "id": "throw",
+      "type": "atomic",
+      "instruction": "Throw{mod}",
+      "modifiers": [
+        {
+          "body_parts": [
+            "right_hand"
+          ],
+          "instruction": "Throw{mod} with the {body_parts}"
+        },
+        {
+          "body_parts": [
+            "left_hand"
+          ],
+          "instruction": "Throw{mod} with the {body_parts}"
+        }
+      ]
+    },
     "pick_up_something": {
       "id": "pick_up_something",
       "type": "atomic",
       "instruction": "Pick{mod} something up"
+    }
+    ,
+    "clap": {
+      "id": "clap",
+      "type": "atomic",
+      "instruction": "Clap{mod}"
+    },"squat": {
+      "id": "squat",
+      "type": "atomic",
+      "instruction": "Squat{mod}"
     },
     "bend": {
       "id": "bend",
@@ -179,24 +228,6 @@
           "instruction": "Wave{mod} with both hands"
         }
       ]
-    },
-    "walk_wave": {
-      "id": "walk_wave",
-      "type": "composite",
-      "constituents": [
-        "walk",
-        "wave"
-      ],
-      "composition_type": "simultaneous"
-    },
-    "walk_jump": {
-      "id": "walk_jump",
-      "type": "composite",
-      "constituents": [
-        "walk",
-        "jump"
-      ],
-      "composition_type": "simultaneous"
     }
   },
   "sound_location": "resources\\",

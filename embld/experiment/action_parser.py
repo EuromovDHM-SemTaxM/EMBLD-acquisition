@@ -69,8 +69,8 @@ def __process_action(action, mod: str = None):
                         inst_arg, param_value
                     )
                 local_actions.append(v_action)
-                pass
-
+        else:
+            local_actions.append(action)
     elif type == "composite":
         composition_type = __composition_types[action["composition_type"]]
         constituents = action["constituents"]

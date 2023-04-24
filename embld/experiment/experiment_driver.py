@@ -100,6 +100,39 @@ class EMBLDAcquisitionDriver(QObject):
                         "composition_type": "successive",
                         "constituents": [id_1, id_2],
                     }
+                    
+        # for i in trange(len(generated_actions)):
+        #     for j in range(len(generated_actions)):
+        #         for k in range(len(generated_actions)):
+        #             a_1 = generated_actions[i]
+        #             a_2 = generated_actions[j]
+        #             a_3 = generated_actions[j]
+                    
+        #             id_1 = a_1["id"]
+        #             id_2 = a_2["id"]
+        #             id_3 = a_3["id"]
+        #             if id_1 != id_2 and id_2 != id_3 and id_1 != id_3:
+        #                 if (a_1["type"] == "composite"
+        #                         and a_2["type"] != "composite"
+        #                         and id_2 in a_1["constituents"]):
+        #                     continue
+        #                 elif (a_1["type"] != "composite"
+        #                     and a_2["type"] == "composite"
+        #                     and id_1 in a_2["constituents"]):
+        #                     continue
+        #                 elif a_1["type"] == "composite" and a_2[
+        #                         "type"] == "composite":
+        #                     continue
+
+        #                 # if _same_body_parts(a_1, a_2):
+        #                 #     continue
+
+        #                 self.__actions[f"{id_1}_then_{id_2}"] = {
+        #                     "id": f"{id_1}_then_{id_2}",
+        #                     "type": "composite",
+        #                     "composition_type": "successive",
+        #                     "constituents": [id_1, id_2],
+        #                 }
         generated_actions = generate_actions()
         self.generated_configurations = [
             action for action in generated_actions
