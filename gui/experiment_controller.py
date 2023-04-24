@@ -46,7 +46,7 @@ class ExperimentGUIController:
             recorders = {
                 "metadata": MetadataRecorder(metadata, trial_segments=trial_segments, inst=1),
                 #"metadata2": MetadataRecorder(metadata, trial_segments=trial_segments, inst=2),
-                # "mocap": QTMMocapRecorder(metadata, trial_segments=trial_segments),
+                "mocap": QTMMocapRecorder(metadata, trial_segments=trial_segments),
                 # 'fnirs': ArtinisFNIRSRecorder(metadata, trial_segments=trial_segments)
             }
 
