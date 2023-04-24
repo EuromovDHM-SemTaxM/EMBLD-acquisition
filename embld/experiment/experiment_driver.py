@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 from random import sample
+import random
 import numpy as np
 
 import simpy.rt
@@ -109,19 +110,22 @@ class EMBLDAcquisitionDriver(QObject):
 
         return len(self.generated_configurations)
 
-    def sample(self, list: list, number: int):
-        rng = np.random.default_rng()
+    def sample(self, list: list, number: int, seed):
+        rng = np.random.default_rng(seed=seed)
         radius = len(list) / 3
         engine = qmc.PoissonDisc(radius=radius, dim=1, rng=rng)
         draw = engine.integers(0, len(list), n=number)
         indices = [item[0] for item in draw]
         return [list[i] for i in indices]
 
-    def sample_configurations_ratio(self, ratio: float, atomic_first=True):
+    def sample_configurations_ratio(self,
+                                    ratio: float,
+                                    seed,
+                                    atomic_first=True):
         return self.sample_configurations(
-            int(len(self.generated_configurations) * ratio, atomic_first))
+            int(len(self.generated_configurations) * ratio, atomic_first), seed)
 
-    def sample_configurations(self, number: int, atomic_first=True):
+    def sample_configurations(self, number: int, seed, atomic_first=True):
         configurations = self.generated_configurations.copy()
         if atomic_first:
             atomic_configurations = [
@@ -152,17 +156,20 @@ class EMBLDAcquisitionDriver(QObject):
                   ["type"] == "atomic" and APP_PARAMETERS["actions"]
                   [configuration["constituents"][1]]["type"] == "composite"))
             ]
+            random.seed(seed)
             num_simple = int(
                 min((number - len(atomic_configurations)) / 2,
                     len(simple_successive)))
-            atomic_configurations.extend(sample(simple_successive, num_simple))
+            atomic_configurations.extend(
+                sample(simple_successive, num_simple))
             num_complex = int(
                 min(number - len(atomic_configurations),
                     len(composite_configurations)))
             atomic_configurations.extend(
                 sample(composite_configurations, num_complex))
             return atomic_configurations
-        return sample(configurations, min(number, len(configurations)))
+        return sample(configurations,
+                      min(number, len(configurations)))
 
     def next_step(self):
         self.protocol.next_trial()
@@ -179,10 +186,13 @@ class EMBLDAcquisitionDriver(QObject):
         increment_segment_slot,
         metadata,
         recorders=None,
+        resume = None
     ):
 
         if recorders is None:
             recorders = {}
+
+        seed = hash(metadata["id"]) + hash(metadata["session"])
 
         env = simpy.rt.RealtimeEnvironment(factor=0.1)
         self.timer_thread = TimerEventThread()
@@ -191,12 +201,13 @@ class EMBLDAcquisitionDriver(QObject):
             self.generate_configurations()
         sample_value = APP_PARAMETERS["sample"]
         if isinstance(sample_value, float):
-            configurations = self.sample_configurations_ratio(sample_value)
+            configurations = self.sample_configurations_ratio(
+                sample_value, seed)
         else:
-            configurations = self.sample_configurations(sample_value)
+            configurations = self.sample_configurations(sample_value, seed)
 
         self.protocol = ProtocolSimulationThread(env, configurations,
-                                                 self.timer_thread)
+                                                 self.timer_thread, resume = resume)
 
         generator = SoundGenerationThread(configurations, self.protocol)
         generator.start()
@@ -229,10 +240,9 @@ class EMBLDAcquisitionDriver(QObject):
             self.__connect_recorder(recorder, ready_for_next_slot)
 
         self.__register_metadata_connection(recorders)
-        
 
         self.sync_signal.connect(increment_segment_slot)
-        
+
         self.protocol.connect_stop_experiment_signal
 
         def protocol_ready():
@@ -281,7 +291,7 @@ class EMBLDAcquisitionDriver(QObject):
 
     def end_experiment(self):
         self.stop_threads()
-    
+
     def connect_experiment_end(self, slot):
         self.protocol.connect_stop_experiment_signal(slot)
         self.protocol.connect_stop_experiment_signal(self.end_experiment)

@@ -59,7 +59,7 @@ class DashboardView(QMainWindow):
 
         self._status_bar = self.statusBar()
         self._status_bar.setMinimumWidth(self.START_WINDOW_WIDTH)
-        self._status_bar.showMessage("TEST TEST TEST")
+        self._status_bar.showMessage("Ready")
         # self.status_bar.setContentsMargins(0, 50, 0, 0)
 
         root_widget = QWidget(self)
@@ -152,6 +152,16 @@ class DashboardView(QMainWindow):
         self.exp_session_label = QLabel("Session Number")
         self.exp_session_label.setStyleSheet("font-size:10pt;")
         left_subject_pane_layout.addRow(self.exp_session_label, self.exp_session)
+        
+        self.exp_session_resume = QSpinBox()
+        self.exp_session_resume.setValue(-1)
+        self.exp_session_resume.setStyleSheet(
+            "font-family: Segoe UI Semilight; font-size:12pt;"
+        )
+        
+        self.exp_session_resume_label = QLabel("Resume at:")
+        self.exp_session_resume_label.setStyleSheet("font-size:10pt;")
+        left_subject_pane_layout.addRow(self.exp_session_resume_label, self.exp_session_resume)
 
         right_subject_pane = QWidget(self.subject_panel)
         right_subject_pane_layout = QFormLayout(right_subject_pane)
@@ -282,7 +292,10 @@ class DashboardView(QMainWindow):
         self.running_state += 1
 
     def set_progressbar_start_experiment(self, num_configurations):
-        self.experiment_progress.setMinimum(0)
+        if self.exp_session_resume.value() != -1:
+            self.experiment_progress.setValue(self.exp_session_resume.value())
+        else:
+            self.experiment_progress.setMinimum(0)
         self.experiment_progress.setMaximum(num_configurations)
 
     def set_ready_for_next(self):

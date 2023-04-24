@@ -104,22 +104,23 @@ class TrialRecorder(QObject):
     # TODO Rename this here and in `handle_protocol_events`
     def _extracted_from_handle_protocol_events_(self, event_name):
         if self.current_segment == 1:
-            duration = (now_absolute() - self.ongoing_start_time) / 1000.0
-            onset = 0
-            logger.debug(f"{self.__class__.__name__} |First segment sync o=0 d={duration}")
+            onset = (now_absolute() - self.ongoing_start_time) / 1000.0
+            duration = -1
+            logger.debug(f"{self.__class__.__name__} |First segment sync o={onset}")
 
         elif (
             1 < self.current_segment < self.trial_segments
         ) or self.current_segment == self.trial_segments:
-            onset = self.annotation_onsets[-1] + self.annotation_durations[-1]
-            duration = (now_absolute() - self.ongoing_start_time) / 1000.0
-            logger.debug(f"{self.__class__.__name__} | Intermediary or final sync o={onset} d={duration}")
+            onset = (now_absolute() - self.ongoing_start_time) / 1000.0
+            duration = onset - self.annotation_onsets[-1] 
+            logger.debug(f"{self.__class__.__name__} | Intermediary or final sync o={onset} prev d={duration}")
 
         self.mutex.lockForWrite()
         self.annotation_onsets.append(onset)
-        self.annotation_durations.append(duration)
+        if duration > -1:
+            self.annotation_durations.append(duration)
         self.annotation_descriptions.append(event_name)
-        self.ongoing_start_time = now_absolute()
+        # self.ongoing_start_time = now_absolute()
 
         self.next_segment = True
         self.mutex.unlock()

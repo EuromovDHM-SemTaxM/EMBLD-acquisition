@@ -20,7 +20,7 @@ class ProtocolSimulationThread(QThread):
     wait_for_next_signal = pyqtSignal()
     stop_experiment_signal = pyqtSignal()
 
-    def __init__(self, env, steps, timer) -> None:
+    def __init__(self, env, steps, timer, resume=None) -> None:
         super().__init__()
         self.env = env
         self.steps = steps
@@ -30,9 +30,14 @@ class ProtocolSimulationThread(QThread):
         self.timer = timer
         self.lock = QReadWriteLock()
         self.post_wait = False
+        self.resume = resume
         logger.debug("Protocol: Initializing protocol thread...")
 
+    def _steps(self):
+        return self.steps[self.resume-1:] if self.resume else self.steps
+    
     def run(self):
+        # debugpy.debug_this_thread()
         logger.debug("Protocol: Creating event lock and setting it...")
         # self.wait_for_next_signal.emit()
         self.trial_event = threading.Event()
@@ -40,7 +45,7 @@ class ProtocolSimulationThread(QThread):
         self.not_ready()
         self.next_trial()
         step_num = 0
-        for step in self.steps:
+        for step in self._steps():
             self.post_wait = False
             self.not_ready()
             self.trial_event.wait(timeout=None)

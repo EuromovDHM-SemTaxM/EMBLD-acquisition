@@ -46,13 +46,14 @@ class ExperimentGUIController:
             recorders = {
                 "metadata": MetadataRecorder(metadata, trial_segments=trial_segments, inst=1),
                 #"metadata2": MetadataRecorder(metadata, trial_segments=trial_segments, inst=2),
-                "mocap": QTMMocapRecorder(metadata, trial_segments=trial_segments),
+                # "mocap": QTMMocapRecorder(metadata, trial_segments=trial_segments),
                 # 'fnirs': ArtinisFNIRSRecorder(metadata, trial_segments=trial_segments)
             }
 
             logger.debug("Generating configurations...")
             self.driver.generate_configurations()
-        
+            
+            resume = self.view.exp_session_resume.value()
 
             status_label_slot = self.view.get_status_slot()
             num_configurations = self.driver.run_experiment(
@@ -63,6 +64,7 @@ class ExperimentGUIController:
                 increment_segment_slot=self.view.increment_running,
                 metadata=metadata,
                 recorders=recorders,
+                resume=resume
             )
             self.view.set_progressbar_start_experiment(num_configurations)
             self.time = now_absolute()

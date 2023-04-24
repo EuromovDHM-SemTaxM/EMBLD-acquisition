@@ -25,13 +25,13 @@ def _write_metadata_and_annotations(
     metadata["segments"] = []
 
     for i in range(len(annotation_onsets)):
-        metadata["segments"].append(
-            {
-                "position": i,
-                "onset": annotation_onsets[i],
-                "duration": annotation_durations[i],
-            }
-        )
+        mdict = {
+            "position": i,
+            "onset": annotation_onsets[i]
+        }
+        if i > 0: 
+            mdict["duration"] = annotation_durations[i-1]
+        metadata["segments"].append(mdict)
     with open(target_path, "w") as fp:
         json.dump(metadata, fp)
 
