@@ -187,21 +187,21 @@
     "clap": {
       "id": "clap",
       "type": "atomic",
-      "instruction": "Clap{mod}"
+      "instruction": "Clap"
     },"squat": {
       "id": "squat",
       "type": "atomic",
-      "instruction": "Squat{mod}"
+      "instruction": "Squat"
     },
     "bend": {
       "id": "bend",
       "type": "atomic",
-      "instruction": "Bend{mod}"
+      "instruction": "Bend"
     },
     "jump": {
       "id": "jump",
       "type": "atomic",
-      "instruction": "Jump{mod}"
+      "instruction": "Jump"
     },
     "wave": {
       "id": "wave",
