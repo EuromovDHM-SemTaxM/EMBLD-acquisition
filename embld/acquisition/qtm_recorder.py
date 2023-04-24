@@ -82,6 +82,11 @@ class QTMMocapRecorder(TrialRecorder):
         print("Merging raws...")
         merged_raw = np.concatenate(raws, 2)
         c3d["data"]["points"] = merged_raw
+        print("SR", self.sampling_rate)
+        print("Channels", len(self.channels))
+        print("Annotations", len(self.annotation_onsets))
+        print(self.annotation_descriptions)
+        
         c3d["parameters"]["POINT"]["RATE"]["value"] = [self.sampling_rate]
         c3d["parameters"]["POINT"]["LABELS"]["value"] = tuple(self.channels)
         c3d["parameters"]["POINT"]["USED"]["value"] = tuple(self.channels)
