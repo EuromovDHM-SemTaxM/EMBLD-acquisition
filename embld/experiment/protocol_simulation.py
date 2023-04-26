@@ -34,8 +34,8 @@ class ProtocolSimulationThread(QThread):
         logger.debug("Protocol: Initializing protocol thread...")
 
     def _steps(self):
-        return self.steps[self.resume-1:] if self.resume else self.steps
-    
+        return self.steps[self.resume - 1 :] if self.resume else self.steps
+
     def run(self):
         # debugpy.debug_this_thread()
         logger.debug("Protocol: Creating event lock and setting it...")
@@ -56,17 +56,17 @@ class ProtocolSimulationThread(QThread):
                 .replace(" ", "_")
                 .replace(".", "")
             )
-            
+
             self.lock.lockForRead()
             beep_sound = self.sounds["beep"]
             current_sound = self.sounds[key]
             self.lock.unlock()
-            
+
             self.wait_for_next_trial()
             _play(beep_sound)
-            
+
             logger.debug("Protocol: \tUnlocking...")
-            num_segments = 1 if step["type"] == "atomic" else 2
+            num_segments = 1 if step["type"] == "atomic" else len(step["constituents"])
             self.status_signal.emit(str(self.timer.now()))
             self.status_signal.emit(step["id"] + "@" + str(num_segments))
             self.status_signal_label.emit(step["instruction"])

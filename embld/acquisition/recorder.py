@@ -78,7 +78,7 @@ class TrialRecorder(QObject):
                 self.mutex.unlock()
                 end = now_absolute()
                 logger.debug(f"Segment duration: {end - start}")
-                current_trial+=1
+                current_trial += 1
             self.end_acquisition()
             self.coalesce_and_save(raws)
 
@@ -92,7 +92,9 @@ class TrialRecorder(QObject):
         ):
             self._extracted_from_handle_protocol_events_(event_name)
         if event_name != "sync" and "@" in event_name:
-            logger.debug(f"{self.__class__.__name__} | Initiating new segment {event_name}")
+            logger.debug(
+                f"{self.__class__.__name__} | Initiating new segment {event_name}"
+            )
             parts = event_name.split("@")
             self.ongoing_start_time = now_absolute()
             self.current_trial_id = parts[0]
@@ -112,8 +114,10 @@ class TrialRecorder(QObject):
             1 < self.current_segment < self.trial_segments
         ) or self.current_segment == self.trial_segments:
             onset = (now_absolute() - self.ongoing_start_time) / 1000.0
-            duration = onset - self.annotation_onsets[-1] 
-            logger.debug(f"{self.__class__.__name__} | Intermediary or final sync o={onset} prev d={duration}")
+            duration = onset - self.annotation_onsets[-1]
+            logger.debug(
+                f"{self.__class__.__name__} | Intermediary or final sync o={onset} prev d={duration}"
+            )
 
         self.mutex.lockForWrite()
         self.annotation_onsets.append(onset)
