@@ -91,10 +91,11 @@ class QTMMocapRecorder(TrialRecorder):
         c3d["parameters"]["POINT"]["LABELS"]["value"] = tuple(self.channels)
         c3d["parameters"]["POINT"]["USED"]["value"] = [len(self.channels)]
 
-        c3d.add_parameter("EVENT", "USED", [len(self.annotation_onsets)])
+        c3d.add_parameter("EVENT", "USED", {'type': 2, "value":[len(self.annotation_onsets)]})
         c3d.add_parameter("EVENT", "LABELS", tuple(self.annotation_descriptions))
-        c3d.add_parameter("EVENT", "TIMES", tuple(self.annotation_onsets))
-        c3d.add_parameter("EVENT", "TIME", tuple(self.annotation_onsets))
+        times_array = np.zeros(2, len(self.annotation_onsets))
+        times_array[1] = np.array(self.annotation_onsets)
+        c3d.add_parameter("EVENT", "TIMES", {'type': 4, 'value':times_array})
 
         subject_str = subject_string_trial(
             self.metadata, self.trial_number, self.current_trial_id

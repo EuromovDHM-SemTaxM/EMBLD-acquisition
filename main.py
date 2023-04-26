@@ -1,5 +1,7 @@
+import os
 import sys
 
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
 from gui.dashboard_view import DashboardView
@@ -18,7 +20,10 @@ setup_logging(
 
 
 if __name__ == "__main__":
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
+    app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+    
     win = DashboardView()
     controller = ExperimentGUIController(win)
     win.show()

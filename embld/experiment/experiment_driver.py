@@ -1,3 +1,5 @@
+from collections import defaultdict
+import itertools
 import json
 import logging
 from pathlib import Path
@@ -21,6 +23,16 @@ from PyQt5.QtCore import QThread
 # from scipy.stats import qmc
 
 logger = logging.getLogger()
+
+
+def _all_different(item) -> bool:
+    return (len(item) != 2 or item[0] != item[1]) and (
+        len(item) != 3
+        or not item[0] == item[1] == item[2]
+        and item[0] != item[1]
+        and item[0] != item[2]
+        and item[1] != item[2]
+    )
 
 
 def _same_body_parts(action_1, action_2):
@@ -48,9 +60,34 @@ def _same_body_parts(action_1, action_2):
     body_parts_2 = set(body_parts_2)
     if not body_parts_1 or not body_parts_2:
         return True
-    return (body_parts_1.issubset(body_parts_2)
-            or body_parts_2.issubset(body_parts_1)
-            or body_parts_2 == body_parts_1)
+    return (
+        body_parts_1.issubset(body_parts_2)
+        or body_parts_2.issubset(body_parts_1)
+        or body_parts_2 == body_parts_1
+    )
+
+
+def _successive_actions_key(action_tuple):
+    return "_then_".join([action["id"] for action in action_tuple])
+
+
+def _max_repetitions_reached(action, repetitions):
+    max_repetitions = APP_PARAMETERS["max_repetitions"]
+    if action["type"] == "atomic":
+        return repetitions[action["id"]] >= max_repetitions
+    constituents = action["constituents"]
+    if repetitions[constituents[0]] >= max_repetitions:
+        return True
+
+
+def _update_repetitions(action, repetitions):
+    if action["type"] == "atomic":
+        repetitions[action["id"]] += 1
+    else:
+        constituents = action["constituents"]
+        repetitions[constituents[0]] += 1
+
+    return repetitions
 
 
 class EMBLDAcquisitionDriver(QObject):
@@ -69,76 +106,45 @@ class EMBLDAcquisitionDriver(QObject):
         self.protocol = None
         self.recorder_threads = {}
 
-    def generate_configurations(self):
+    def generate_configurations(
+        self, include_successions=None, symmetric_combinations=True
+    ):
+        if include_successions is None:
+            include_successions = [2, 3]
         generated_actions = generate_actions()
+
         self.generated_configurations = []
-        for i in trange(len(generated_actions)):
-            for j in range(len(generated_actions)):
-                a_1 = generated_actions[i]
-                a_2 = generated_actions[j]
-                id_1 = a_1["id"]
-                id_2 = a_2["id"]
-                if id_1 != id_2:
-                    if (a_1["type"] == "composite"
-                            and a_2["type"] != "composite"
-                            and id_2 in a_1["constituents"]):
-                        continue
-                    elif (a_1["type"] != "composite"
-                          and a_2["type"] == "composite"
-                          and id_1 in a_2["constituents"]):
-                        continue
-                    elif a_1["type"] == "composite" and a_2[
-                            "type"] == "composite":
-                        continue
 
-                    # if _same_body_parts(a_1, a_2):
-                    #     continue
+        for current_succession_len in include_successions:
 
-                    self.__actions[f"{id_1}_then_{id_2}"] = {
-                        "id": f"{id_1}_then_{id_2}",
-                        "type": "composite",
-                        "composition_type": "successive",
-                        "constituents": [id_1, id_2],
-                    }
-                    
-        # for i in trange(len(generated_actions)):
-        #     for j in range(len(generated_actions)):
-        #         for k in range(len(generated_actions)):
-        #             a_1 = generated_actions[i]
-        #             a_2 = generated_actions[j]
-        #             a_3 = generated_actions[j]
-                    
-        #             id_1 = a_1["id"]
-        #             id_2 = a_2["id"]
-        #             id_3 = a_3["id"]
-        #             if id_1 != id_2 and id_2 != id_3 and id_1 != id_3:
-        #                 if (a_1["type"] == "composite"
-        #                         and a_2["type"] != "composite"
-        #                         and id_2 in a_1["constituents"]):
-        #                     continue
-        #                 elif (a_1["type"] != "composite"
-        #                     and a_2["type"] == "composite"
-        #                     and id_1 in a_2["constituents"]):
-        #                     continue
-        #                 elif a_1["type"] == "composite" and a_2[
-        #                         "type"] == "composite":
-        #                     continue
+            if symmetric_combinations:
+                prod = list(
+                    itertools.combinations(generated_actions, current_succession_len)
+                )
+                prod.extend(reversed(prod.copy()))
+            else:
+                prod_input = [generated_actions for _ in range(current_succession_len)]
+                prod = itertools.product(*prod_input)
 
-        #                 # if _same_body_parts(a_1, a_2):
-        #                 #     continue
+            prod = [item for item in prod if _all_different(item)]
+            for item in prod:
+                key = _successive_actions_key(item)
+                self.__actions[key] = {
+                    "id": key,
+                    "type": "composite",
+                    "composition_type": "successive",
+                    "constituents": [action["id"] for action in item],
+                }
 
-        #                 self.__actions[f"{id_1}_then_{id_2}"] = {
-        #                     "id": f"{id_1}_then_{id_2}",
-        #                     "type": "composite",
-        #                     "composition_type": "successive",
-        #                     "constituents": [id_1, id_2],
-        #                 }
         generated_actions = generate_actions()
         self.generated_configurations = [
-            action for action in generated_actions
-            if action["type"] == "atomic" or (
+            action
+            for action in generated_actions
+            if action["type"] == "atomic"
+            or (
                 action["type"] == "composite"
-                and action["composition_type"] == "successive")
+                and action["composition_type"] == "successive"
+            )
         ]
 
         return len(self.generated_configurations)
@@ -151,58 +157,131 @@ class EMBLDAcquisitionDriver(QObject):
         indices = [item[0] for item in draw]
         return [list[i] for i in indices]
 
-    def sample_configurations_ratio(self,
-                                    ratio: float,
-                                    seed,
-                                    atomic_first=True):
+    def sample_configurations_ratio(self, ratio: float, seed, atomic_first=True):
         return self.sample_configurations(
-            int(len(self.generated_configurations) * ratio, atomic_first), seed)
+            int(len(self.generated_configurations) * ratio, atomic_first), seed
+        )
 
-    def sample_configurations(self, number: int, seed, atomic_first=True):
+    def sample_configurations(
+        self,
+        number: int,
+        seed,
+        order_subset_number=1,
+        exclusion_list=None,
+        sampling_criteria=None,
+    ):
+        random.seed(seed)
+
+        max_repetitions = APP_PARAMETERS["max_repetitions"]
+
+        if exclusion_list is None:
+            exclusion_list = []
+        if sampling_criteria is None:
+            sampling_criteria = [
+                {
+                    "name": "atomic_first",
+                    "condition": lambda x: x["type"] == "atomic",
+                    "strategy": "exhaustive",
+                },
+                {
+                    "name": "two_successive",
+                    "condition": lambda x: x["type"] == "composite"
+                    and x["composition_type"] == "successive"
+                    and len(x["constituents"]) == 2,
+                    "strategy": "order_subset_pick",
+                    "modalities": ["unique"],
+                    "skip": 21,
+                },
+                {
+                    "name": "three_successive",
+                    "condition": lambda x: x["type"] == "composite"
+                    and x["composition_type"] == "successive"
+                    and len(x["constituents"]) == 3,
+                    "strategy": "order_subset_pick",
+                    "modalities": ["unique"],
+                    "skip": 379,
+                },
+            ]
         configurations = self.generated_configurations.copy()
-        if atomic_first:
-            atomic_configurations = [
-                configuration for configuration in configurations
-                if configuration["type"] == "atomic"
-            ]
+        configurations = [
+            configuration
+            for configuration in configurations
+            if configuration["id"] not in exclusion_list
+        ]
+        sampled_configurations = []
+        filtered_configurations_to_sample = {}
 
-            simple_successive = [
-                configuration for configuration in configurations
-                if configuration["type"] == "composite"
-                and configuration["composition_type"] == "successive"
-                and APP_PARAMETERS["actions"][configuration["constituents"][0]]
-                ["type"] == "atomic" and APP_PARAMETERS["actions"][
-                    configuration["constituents"][1]]["type"] == "atomic"
+        filtered_configurations_to_pick_by_subset_order = {}
+        for criterion in sampling_criteria:
+            criterion_configurations = [
+                configuration
+                for configuration in configurations
+                if criterion["condition"](configuration)
             ]
+            if criterion["strategy"] == "exhaustive":
+                sampled_configurations.extend(criterion_configurations)
+            else:
+                if "modalities" in criterion and "unique" in criterion["modalities"]:
+                    unique_ids = {
+                        configuration["id"]
+                        for configuration in criterion_configurations
+                    }
+                    criterion_configurations = [
+                        configuration
+                        for configuration in criterion_configurations
+                        if configuration["id"] in unique_ids
+                    ]
 
-            composite_configurations = [
-                configuration for configuration in configurations
-                if configuration["type"] == "composite"
-                and configuration["composition_type"] == "successive" and
-                ((APP_PARAMETERS["actions"][configuration["constituents"][0]]
-                  ["type"] == "composite" and APP_PARAMETERS["actions"]
-                  [configuration["constituents"][1]]["type"] == "composite") or
-                 (APP_PARAMETERS["actions"][configuration["constituents"][0]]
-                  ["type"] == "composite" and APP_PARAMETERS["actions"][
-                      configuration["constituents"][1]]["type"] == "atomic") or
-                 (APP_PARAMETERS["actions"][configuration["constituents"][0]]
-                  ["type"] == "atomic" and APP_PARAMETERS["actions"]
-                  [configuration["constituents"][1]]["type"] == "composite"))
-            ]
-            random.seed(seed)
-            num_simple = int(
-                min((number - len(atomic_configurations)) / 2,
-                    len(simple_successive)))
-            atomic_configurations.extend(
-                sample(simple_successive, num_simple))
-            num_complex = int(
-                min(number - len(atomic_configurations),
-                    len(composite_configurations)))
-            atomic_configurations.extend(
-                sample(composite_configurations, num_complex))
-            return atomic_configurations
-        return sample(configurations,
-                      min(number, len(configurations)))
+                if criterion["strategy"] == "sample":
+                    filtered_configurations_to_sample[
+                        criterion["name"]
+                    ] = criterion_configurations
+                elif criterion["strategy"] == "order_subset_pick":
+                    filtered_configurations_to_pick_by_subset_order[
+                        criterion["name"]
+                    ] = criterion_configurations
+
+        # Sampling pick
+        draws_left = number - len(sampled_configurations)
+        items_left = len(filtered_configurations_to_sample)
+        for filtered_configurations in filtered_configurations_to_sample.values():
+            sampled = sample(filtered_configurations, int(draws_left / items_left))
+            draws_left -= len(sampled)
+            items_left -= 1
+
+            sampled_configurations.extend(sampled)
+
+        # Order subset pick
+        draws_left = number - len(sampled_configurations)
+        items_left = len(filtered_configurations_to_pick_by_subset_order)
+        repetition_dict = defaultdict(int)
+        for (
+            filtered_configurations
+        ) in filtered_configurations_to_pick_by_subset_order.values():
+            number_of_items = int(draws_left / items_left)
+            # skip = len(filtered_configurations) // number_of_items
+            skip = criterion["skip"]
+            next_index = order_subset_number
+            sampled = []
+            while number_of_items > 0:
+                sample = filtered_configurations[
+                    next_index % len(filtered_configurations)
+                ]
+
+                # while _max_repetitions_reached(sample, repetition_dict):
+                #     next_index += 1
+                #     sample = filtered_configurations[
+                #         next_index % len(filtered_configurations)
+                #     ]
+                # repetition_dict = _update_repetitions(sample, repetition_dict)
+                sampled.append(sample)
+                next_index += skip
+                number_of_items -= 1
+            draws_left -= len(sampled)
+            items_left -= 1
+            sampled_configurations.extend(sampled)
+
+        return sampled_configurations
 
     def next_step(self):
         self.protocol.next_trial()
@@ -219,7 +298,7 @@ class EMBLDAcquisitionDriver(QObject):
         increment_segment_slot,
         metadata,
         recorders=None,
-        resume = None
+        resume=None,
     ):
 
         if recorders is None:
@@ -234,13 +313,13 @@ class EMBLDAcquisitionDriver(QObject):
             self.generate_configurations()
         sample_value = APP_PARAMETERS["sample"]
         if isinstance(sample_value, float):
-            configurations = self.sample_configurations_ratio(
-                sample_value, seed)
+            configurations = self.sample_configurations_ratio(sample_value, seed)
         else:
             configurations = self.sample_configurations(sample_value, seed)
 
-        self.protocol = ProtocolSimulationThread(env, configurations,
-                                                 self.timer_thread, resume = resume)
+        self.protocol = ProtocolSimulationThread(
+            env, configurations, self.timer_thread, resume=resume
+        )
 
         generator = SoundGenerationThread(configurations, self.protocol)
         generator.start()
@@ -306,7 +385,6 @@ class EMBLDAcquisitionDriver(QObject):
             self.protocol.connect_status_label_signal(handle_event_label)
 
     def __connect_recorder(self, recorder, ready_for_next_slot):
-
         def handle_event(event):
             recorder.handle_protocol_events(event)
 
