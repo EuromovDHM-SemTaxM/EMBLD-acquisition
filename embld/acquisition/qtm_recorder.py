@@ -25,6 +25,7 @@ def _start_lsl_client(stream_host, stream_type, buffer_size):
     )
     return pylsl.StreamInlet(info=stream_info, max_buflen=buffer_size)
 
+
 def _extract_channels(info_structure):
     channels = []
     ch = info_structure.desc().child("setup").child("markers").child("marker")
@@ -86,21 +87,23 @@ class QTMMocapRecorder(TrialRecorder):
         print("Channels", len(self.channels))
         print("Annotations", len(self.annotation_onsets))
         print(self.annotation_descriptions)
-        
+
         c3d["parameters"]["POINT"]["RATE"]["value"] = [self.sampling_rate]
         c3d["parameters"]["POINT"]["LABELS"]["value"] = tuple(self.channels)
         c3d["parameters"]["POINT"]["USED"]["value"] = [len(self.channels)]
 
-        c3d.add_parameter("EVENT", "USED", {'type': 2, "value":[len(self.annotation_onsets)]})
-        c3d.add_parameter("EVENT", "LABELS", tuple(self.annotation_descriptions))
-        times_array = np.zeros(2, len(self.annotation_onsets))
-        times_array[1] = np.array(self.annotation_onsets)
-        c3d.add_parameter("EVENT", "TIMES", {'type': 4, 'value':times_array})
+        # c3d.add_parameter("EVENT", "USED", {'type': 2, "value":[len(self.annotation_onsets)]})
+        # c3d.add_parameter("EVENT", "LABELS", tuple(self.annotation_descriptions))
+        # times_array = np.zeros(2, len(self.annotation_onsets))
+        # times_array[1] = np.array(self.annotation_onsets)
+        # c3d.add_parameter("EVENT", "TIMES", {'type': 4, 'value':times_array})
 
         subject_str = subject_string_trial(
             self.metadata, self.trial_number, self.current_trial_id
         )
-        target_path_mocap = Path(self.base_output_path,"recordings", f"{subject_str}_mocap.c3d")
+        target_path_mocap = Path(
+            self.base_output_path, "recordings", f"{subject_str}_mocap.c3d"
+        )
         c3d.write(str(target_path_mocap))
 
     def __init__(
