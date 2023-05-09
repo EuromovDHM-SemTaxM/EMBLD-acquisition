@@ -52,12 +52,10 @@ class ExperimentGUIController:
             }
 
             if self.view.is_mocap_enabled():
-                recorders["mocap"] = (
-                    QTMMocapRecorder(
-                        metadata,
-                        trial_segments=trial_segments,
-                        sampling_rate=APP_PARAMETERS["sampling_rate"],
-                    ),
+                recorders["mocap"] = QTMMocapRecorder(
+                    metadata,
+                    trial_segments=trial_segments,
+                    sampling_rate=APP_PARAMETERS["sampling_rate"],
                 )
 
             logger.debug("Generating configurations...")
