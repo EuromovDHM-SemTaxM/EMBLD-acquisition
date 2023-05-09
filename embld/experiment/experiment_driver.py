@@ -26,12 +26,12 @@ logger = logging.getLogger()
 
 
 def _all_different(item) -> bool:
-    return (len(item) != 2 or item[0] != item[1]) and (
+    return (len(item) != 2 or item[0]["id"] != item[1]["id"]) and (
         len(item) != 3
-        or not item[0] == item[1] == item[2]
-        and item[0] != item[1]
-        and item[0] != item[2]
-        and item[1] != item[2]
+        or not item[0]["id"] == item[1]["id"] == item[2]["id"]
+        and item[0]["id"] != item[1]["id"]
+        and item[0]["id"] != item[2]["id"]
+        and item[1]["id"] != item[2]["id"]
     )
 
 
@@ -71,10 +71,12 @@ def _successive_actions_key(action_tuple):
     return "_then_".join([action["id"] for action in action_tuple])
 
 
-def _max_repetitions_reached(action, repetitions):
-    max_repetitions = APP_PARAMETERS["max_repetitions"]
+def _max_repetitions_reached(action, repetitions, max_repetitions):
     if action["type"] == "atomic":
         return repetitions[action["id"]] >= max_repetitions
+    # The code is checking if the number of repetitions of the first element in the list
+    # "constituents" is greater than or equal to a certain maximum value "max_repetitions". If it is,
+    # then the function returns True.
     constituents = action["constituents"]
     if repetitions[constituents[0]] >= max_repetitions:
         return True
@@ -157,9 +159,22 @@ class EMBLDAcquisitionDriver(QObject):
         indices = [item[0] for item in draw]
         return [list[i] for i in indices]
 
-    def sample_configurations_ratio(self, ratio: float, seed, atomic_first=True):
+    def sample_configurations_ratio(
+        self,
+        ratio: float,
+        seed,
+        atomic_first=True,
+        order_subset_number=1,
+        exclusion_list=None,
+        sampling_criteria=None,
+    ):
         return self.sample_configurations(
-            int(len(self.generated_configurations) * ratio, atomic_first), seed
+            int(len(self.generated_configurations) * ratio, atomic_first),
+            seed,
+            atomic_first,
+            order_subset_number,
+            exclusion_list,
+            sampling_criteria,
         )
 
     def sample_configurations(
@@ -172,7 +187,7 @@ class EMBLDAcquisitionDriver(QObject):
     ):
         random.seed(seed)
 
-        max_repetitions = APP_PARAMETERS["max_repetitions"]
+        # max_repetitions = APP_PARAMETERS["max_repetitions"]
 
         if exclusion_list is None:
             exclusion_list = []
@@ -190,7 +205,8 @@ class EMBLDAcquisitionDriver(QObject):
                     and len(x["constituents"]) == 2,
                     "strategy": "order_subset_pick",
                     "modalities": ["unique"],
-                    "skip": 21,
+                    "skip": 33,
+                    "max_repetitions": 4,
                 },
                 {
                     "name": "three_successive",
@@ -199,7 +215,8 @@ class EMBLDAcquisitionDriver(QObject):
                     and len(x["constituents"]) == 3,
                     "strategy": "order_subset_pick",
                     "modalities": ["unique"],
-                    "skip": 379,
+                    "skip": 200,
+                    "max_repetitions": 5,
                 },
             ]
         configurations = self.generated_configurations.copy()
@@ -211,7 +228,8 @@ class EMBLDAcquisitionDriver(QObject):
         sampled_configurations = []
         filtered_configurations_to_sample = {}
 
-        filtered_configurations_to_pick_by_subset_order = {}
+        filtered_configurations_to_pick_by_subset_order = []
+        filtered_configurations_to_pick_by_subset_order_criteria = []
         for criterion in sampling_criteria:
             criterion_configurations = [
                 configuration
@@ -237,9 +255,12 @@ class EMBLDAcquisitionDriver(QObject):
                         criterion["name"]
                     ] = criterion_configurations
                 elif criterion["strategy"] == "order_subset_pick":
-                    filtered_configurations_to_pick_by_subset_order[
-                        criterion["name"]
-                    ] = criterion_configurations
+                    filtered_configurations_to_pick_by_subset_order.append(
+                        criterion_configurations
+                    )
+                    filtered_configurations_to_pick_by_subset_order_criteria.append(
+                        criterion
+                    )
 
         # Sampling pick
         draws_left = number - len(sampled_configurations)
@@ -254,13 +275,21 @@ class EMBLDAcquisitionDriver(QObject):
         # Order subset pick
         draws_left = number - len(sampled_configurations)
         items_left = len(filtered_configurations_to_pick_by_subset_order)
-        repetition_dict = defaultdict(int)
-        for (
-            filtered_configurations
-        ) in filtered_configurations_to_pick_by_subset_order.values():
+        for filtered_configurations_index in range(
+            len(filtered_configurations_to_pick_by_subset_order)
+        ):
+            repetition_dict = defaultdict(int)
+            filtered_configurations = filtered_configurations_to_pick_by_subset_order[
+                filtered_configurations_index
+            ]
             number_of_items = int(draws_left / items_left)
             # skip = len(filtered_configurations) // number_of_items
-            skip = criterion["skip"]
+            skip = filtered_configurations_to_pick_by_subset_order_criteria[
+                filtered_configurations_index
+            ]["skip"]
+            max_repetitions = filtered_configurations_to_pick_by_subset_order_criteria[
+                filtered_configurations_index
+            ]["max_repetitions"]
             next_index = order_subset_number
             sampled = []
             while number_of_items > 0:
@@ -268,12 +297,14 @@ class EMBLDAcquisitionDriver(QObject):
                     next_index % len(filtered_configurations)
                 ]
 
-                # while _max_repetitions_reached(sample, repetition_dict):
-                #     next_index += 1
-                #     sample = filtered_configurations[
-                #         next_index % len(filtered_configurations)
-                #     ]
-                # repetition_dict = _update_repetitions(sample, repetition_dict)
+                while _max_repetitions_reached(
+                    sample, repetition_dict, max_repetitions
+                ):
+                    next_index += 1
+                    sample = filtered_configurations[
+                        next_index % len(filtered_configurations)
+                    ]
+                repetition_dict = _update_repetitions(sample, repetition_dict)
                 sampled.append(sample)
                 next_index += skip
                 number_of_items -= 1
@@ -313,9 +344,13 @@ class EMBLDAcquisitionDriver(QObject):
             self.generate_configurations()
         sample_value = APP_PARAMETERS["sample"]
         if isinstance(sample_value, float):
-            configurations = self.sample_configurations_ratio(sample_value, seed)
+            configurations = self.sample_configurations_ratio(
+                sample_value, seed, order_subset_number=metadata["configuration"]
+            )
         else:
-            configurations = self.sample_configurations(sample_value, seed)
+            configurations = self.sample_configurations(
+                sample_value, seed, order_subset_number=metadata["configuration"]
+            )
 
         self.protocol = ProtocolSimulationThread(
             env, configurations, self.timer_thread, resume=resume

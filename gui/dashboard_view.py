@@ -16,9 +16,11 @@ from PyQt5.QtWidgets import (
     QPlainTextEdit,
     QProgressBar,
     QSizePolicy,
+    QCheckBox,
 )
 
 from gui.main_windows_rc import *
+
 
 class DashboardView(QMainWindow):
     def __init__(self, parent=None):
@@ -44,6 +46,11 @@ class DashboardView(QMainWindow):
         self.play_button = None
         self.next_button = None
         self.event_button = None
+        self.sampling_configuration = None
+        self.sampling_configuration_label = None
+
+        self.enable_mocap = None
+        self.enable_mocap_label = None
 
         self.running_state = 0
 
@@ -152,16 +159,30 @@ class DashboardView(QMainWindow):
         self.exp_session_label = QLabel("Session Number")
         self.exp_session_label.setStyleSheet("font-size:10pt;")
         left_subject_pane_layout.addRow(self.exp_session_label, self.exp_session)
-        
+
         self.exp_session_resume = QSpinBox()
         self.exp_session_resume.setValue(-1)
         self.exp_session_resume.setStyleSheet(
             "font-family: Segoe UI Semilight; font-size:12pt;"
         )
-        
+
         self.exp_session_resume_label = QLabel("Resume at:")
         self.exp_session_resume_label.setStyleSheet("font-size:10pt;")
-        left_subject_pane_layout.addRow(self.exp_session_resume_label, self.exp_session_resume)
+        left_subject_pane_layout.addRow(
+            self.exp_session_resume_label, self.exp_session_resume
+        )
+
+        self.sampling_configuration = QSpinBox()
+        self.sampling_configuration.setValue(1)
+        self.sampling_configuration.setStyleSheet(
+            "font-family: Segoe UI Semilight; font-size:12pt;"
+        )
+
+        self.sampling_configuration_label = QLabel("Sampling Configuration")
+        self.sampling_configuration_label.setStyleSheet("font-size:10pt;")
+        left_subject_pane_layout.addRow(
+            self.sampling_configuration_label, self.sampling_configuration
+        )
 
         right_subject_pane = QWidget(self.subject_panel)
         right_subject_pane_layout = QFormLayout(right_subject_pane)
@@ -197,6 +218,14 @@ class DashboardView(QMainWindow):
         subject_notes_label = QLabel("Subject notes")
         subject_notes_label.setStyleSheet("font-size:12pt;")
         right_subject_pane_layout.addRow(subject_notes_label, self.subject_notes)
+
+        self.enable_mocap = QCheckBox()
+        self.enable_mocap.setStyleSheet("font-size:12pt;")
+        self.enable_mocap.setChecked(True)
+        self.enable_mocap_label = QLabel("Enable MoCap")
+        self.enable_mocap_label.setStyleSheet("font-size:12pt;")
+        right_subject_pane_layout.addRow(self.enable_mocap, self.enable_mocap_label)
+
         layout.addWidget(self.subject_panel, 0)
 
         self.subject_panel.setMinimumHeight(subject_panel_layout.sizeHint().height())
@@ -320,12 +349,16 @@ class DashboardView(QMainWindow):
     def show_time(self):
         self.status_time_label.setVisible(True)
 
+    def is_mocap_enabled(self):
+        return self.enable_mocap.isChecked()
+
     def subject_metadata(self):
         metadata = {"id": self.exp_subject_id.text()}
         metadata["age"] = self.exp_age.text()
         metadata["sex"] = self.gender_radio_group.checkedButton().text()
         metadata["notes"] = self.subject_notes.toPlainText()
         metadata["session"] = self.exp_session.value()
+        metadata["configuration"] = self.sampling_configuration.value()
         return metadata
 
     def connect_start_simulation(self, slot):

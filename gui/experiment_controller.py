@@ -48,13 +48,17 @@ class ExperimentGUIController:
                     metadata, trial_segments=trial_segments, inst=1
                 ),
                 # "metadata2": MetadataRecorder(metadata, trial_segments=trial_segments, inst=2),
-                "mocap": QTMMocapRecorder(
-                    metadata,
-                    trial_segments=trial_segments,
-                    sampling_rate=APP_PARAMETERS["sampling_rate"],
-                ),
                 # 'fnirs': ArtinisFNIRSRecorder(metadata, trial_segments=trial_segments)
             }
+
+            if self.view.is_mocap_enabled():
+                recorders["mocap"] = (
+                    QTMMocapRecorder(
+                        metadata,
+                        trial_segments=trial_segments,
+                        sampling_rate=APP_PARAMETERS["sampling_rate"],
+                    ),
+                )
 
             logger.debug("Generating configurations...")
             self.driver.generate_configurations()
