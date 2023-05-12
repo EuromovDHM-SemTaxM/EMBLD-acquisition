@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from embld.acquisition.audio_recorder import AudioRecorder
 
 from embld.acquisition.metadata_recorder import MetadataRecorder
 from embld.acquisition.qtm_recorder import QTMMocapRecorder
@@ -44,9 +45,8 @@ class ExperimentGUIController:
 
             logger.info("Registering recorders...")
             recorders = {
-                "metadata": MetadataRecorder(
-                    metadata, trial_segments=trial_segments, inst=1
-                ),
+                "metadata": MetadataRecorder(metadata, trial_segments=trial_segments),
+                "audio": AudioRecorder(metadata, trial_segments=trial_segments),
                 # "metadata2": MetadataRecorder(metadata, trial_segments=trial_segments, inst=2),
                 # 'fnirs': ArtinisFNIRSRecorder(metadata, trial_segments=trial_segments)
             }

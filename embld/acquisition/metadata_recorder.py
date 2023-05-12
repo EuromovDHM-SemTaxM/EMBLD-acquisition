@@ -9,6 +9,7 @@ from embld.experiment.utils import subject_string_trial
 
 logger = logging.getLogger("Metadata Recorder")
 
+
 def _write_metadata_and_annotations(
     metadata,
     trial_order,
@@ -25,12 +26,9 @@ def _write_metadata_and_annotations(
     metadata["segments"] = []
 
     for i in range(len(annotation_onsets)):
-        mdict = {
-            "position": i,
-            "onset": annotation_onsets[i]
-        }
-        if i > 0: 
-            mdict["duration"] = annotation_durations[i-1]
+        mdict = {"position": i, "onset": annotation_onsets[i]}
+        if i > 0:
+            mdict["duration"] = annotation_durations[i - 1]
         metadata["segments"].append(mdict)
     with open(target_path, "w") as fp:
         json.dump(metadata, fp)
@@ -40,14 +38,13 @@ class MetadataRecorder(TrialRecorder):
     def start_acquisition(self):
         logger.debug("Acquistion started for trial {self.trial_number}")
 
-
     def end_acquisition(self):
         logger.debug(f"Acquistion ended for trial {self.trial_number}")
         pass
 
     def acquire(self, num_samples):
         while not self.next_segment:
-            sleep_time = int(num_samples/self.sampling_rate)
+            sleep_time = int(num_samples / self.sampling_rate)
             sleep(sleep_time)
         return []
 
@@ -69,7 +66,9 @@ class MetadataRecorder(TrialRecorder):
         )
         logger.info(f"Metadata saved under {str(target_path_meta)}")
 
-    def __init__(self, metadata, trial_segments: int = 2, base_output_path=".", inst=1,  sampling_rate = 50):
+    def __init__(
+        self, metadata, trial_segments: int = 2, base_output_path=".", sampling_rate=50
+    ):
         super(MetadataRecorder, self).__init__(
             metadata, trial_segments, base_output_path
         )
