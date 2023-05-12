@@ -109,6 +109,11 @@
         }
       ]
     },
+    "walksimple": {
+      "id": "walksimple",
+      "type": "atomic",
+      "instruction": "Walk{mod}"
+    },
     "stomp": {
       "id": "stomp",
       "type": "atomic",
@@ -223,6 +228,16 @@
       "id": "jump",
       "type": "atomic",
       "instruction": "Jump"
+    },
+    "jog": {
+      "id": "jog",
+      "type": "atomic",
+      "instruction": "jog"
+    },
+    "turn_around": {
+      "id": "turn_around",
+      "type": "atomic",
+      "instruction": "Turn around"
     },
     "wave": {
       "id": "wave",
